@@ -21,6 +21,7 @@ const App = () => {
     const [sortDirection, setSortDirection] = useState<SortDirection | null>(
         null,
     );
+    const [manualNumbers, setManualNumbers] = useState<number[]>([]);
 
     const onGenerate = (e: FormEvent) => {
         e.preventDefault();
@@ -122,7 +123,39 @@ const App = () => {
                                     </label>
                                 </>
                             ) : (
-                                ""
+                                <>
+                                    <div className="mt-4">
+                                        <h2>Введіть число</h2>
+                                        <div className="mt-2 flex gap-3 items-center">
+                                            <Input placeholder="Число..." />
+                                            <Button className="px-4">
+                                                Додати
+                                            </Button>
+                                        </div>
+                                        <div className="flex items-center mt-2 gap-2">
+                                            <div className="text-gray-500">
+                                                Додані числа:
+                                            </div>
+                                            <div className="flex gap-2 text-wrap">
+                                                {new Array(10)
+                                                    .fill(0)
+                                                    .map((_, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="flex items-center gap-2 p-1 px-2 text-sm rounded-md bg-gray-100"
+                                                        >
+                                                            <span className="text-gray-500 ">
+                                                                12
+                                                            </span>
+                                                            <button className="text-red-500 hover:text-red-700 duration-300 mt-[2px]">
+                                                                ╳
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
                             )}
                             <div className="mt-4">
                                 <h2>Оберіть напрям сортування</h2>
