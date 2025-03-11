@@ -38,3 +38,13 @@ export const VISIBLE_ARRAY_LENGTH_OPTIONS = [
         value: "1000",
     },
 ];
+
+export interface MainFormState {
+    generateType: GenerateType | null;
+    diapason: { from: string; to: string };
+    arraySize: string;
+    sortType: SortType | null;
+    sortDirection: SortDirection | null;
+    manualNumbers: number[];
+    manualNumberInput: string;
+}

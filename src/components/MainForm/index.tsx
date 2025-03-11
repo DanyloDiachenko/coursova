@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useCallback } from "react";
 import { toast } from "react-toastify";
 import {
     GenerateType,
@@ -16,60 +16,51 @@ import { AddedNumbers } from "../AddedNumbers";
 import { SortDirection as SortDirectionComponent } from "../SortDirection";
 import { SortType as SortTypeComponent } from "../SortType";
 import { Button } from "../Button";
+import { MainFormProps } from "./MainForm.props";
 
-export const MainForm = () => {
-    const [generateType, setGenerateType] = useState<GenerateType | null>(null);
-    const [diapason, setDiapason] = useState<{
-        from: string;
-        to: string;
-    }>({
-        from: "",
-        to: "",
-    });
-    const [arraySize, setArraySize] = useState<string>("");
-    const [sortType, setSortType] = useState<SortType | null>(null);
-    const [sortDirection, setSortDirection] = useState<SortDirection | null>(
-        null,
-    );
-    const [manualNumbers, setManualNumbers] = useState<number[]>([]);
-    const [manualNumberInput, setManualNumberInput] = useState<string>("");
-
-    const onAddManualNumber = () => {
-        if (manualNumbers.length >= MAX_ARRAY_LENGTH) {
+export const MainForm = ({ state, setState }: MainFormProps) => {
+    const onAddManualNumber = useCallback(() => {
+        if (state.manualNumbers.length >= MAX_ARRAY_LENGTH) {
             toast.error(
                 `Досягнута максимальна кількість чисел - ${MAX_ARRAY_LENGTH}`,
             );
             return;
         }
 
-        if (!manualNumberInput?.trim()) {
+        if (!state.manualNumberInput.trim()) {
             toast.error("Введіть число");
             return;
         }
 
-        const parsedNumber = parseInt(manualNumberInput);
+        const parsedNumber = parseInt(state.manualNumberInput);
 
-        if (isNaN(parsedNumber)) {
-            toast.error("Введіть коректне число");
+        if (
+            isNaN(parsedNumber) ||
+            parsedNumber > MAX_NUMBER ||
+            parsedNumber < MIN_NUMBER
+        ) {
+            toast.error(
+                `Введіть коректне число (від ${MIN_NUMBER} до ${MAX_NUMBER})`,
+            );
             return;
         }
 
-        if (parsedNumber > MAX_NUMBER) {
-            toast.error(`Число не може бути більшим за ${MAX_NUMBER}`);
-            return;
-        }
+        setState((prev) => ({
+            ...prev,
+            manualNumbers: [...prev.manualNumbers, parsedNumber],
+            manualNumberInput: "",
+        }));
+    }, [state.manualNumberInput, state.manualNumbers, setState]);
 
-        if (parsedNumber < MIN_NUMBER) {
-            toast.error(`Число не може бути меншим за ${MIN_NUMBER}`);
-            return;
-        }
-
-        setManualNumbers([...manualNumbers, parsedNumber]);
-    };
-
-    const onRemoveManualNumber = (number: number) => {
-        setManualNumbers(manualNumbers.filter((n) => n !== number));
-    };
+    const onRemoveManualNumber = useCallback(
+        (number: number) => {
+            setState((prev) => ({
+                ...prev,
+                manualNumbers: prev.manualNumbers.filter((n) => n !== number),
+            }));
+        },
+        [setState],
+    );
 
     const onGenerate = (e: FormEvent) => {
         e.preventDefault();
@@ -82,53 +73,77 @@ export const MainForm = () => {
                 className="bg-white border-2 border-gray-200 rounded-lg p-5 inline-block"
             >
                 <GenerateTypeComponent
-                    generateType={generateType}
-                    setGenerateType={setGenerateType}
+                    generateType={state.generateType}
+                    setGenerateType={(value) =>
+                        setState((prev) => ({ ...prev, generateType: value }))
+                    }
                 />
-                {generateType && (
+
+                {state.generateType && (
                     <>
-                        {generateType === "auto" ? (
+                        {state.generateType === "auto" ? (
                             <>
                                 <Diapason
-                                    diapason={diapason}
-                                    setDiapason={setDiapason}
+                                    diapason={state.diapason}
+                                    setDiapason={(value) =>
+                                        setState((prev) => ({
+                                            ...prev,
+                                            diapason: value,
+                                        }))
+                                    }
                                 />
                                 <InputArraySize
-                                    arraySize={arraySize}
-                                    setArraySize={setArraySize}
+                                    arraySize={state.arraySize}
+                                    setArraySize={(value) =>
+                                        setState((prev) => ({
+                                            ...prev,
+                                            arraySize: value,
+                                        }))
+                                    }
                                 />
                             </>
                         ) : (
-                            <>
-                                <div className="mt-4">
-                                    <h2>Введіть число</h2>
-                                    <AddNumber
-                                        manualNumberInput={manualNumberInput}
-                                        setManualNumberInput={
-                                            setManualNumberInput
-                                        }
-                                        onAddManualNumber={onAddManualNumber}
-                                    />
-                                    <AddedNumbers
-                                        manualNumbers={manualNumbers}
-                                        onRemoveManualNumber={
-                                            onRemoveManualNumber
-                                        }
-                                    />
-                                </div>
-                            </>
+                            <div className="mt-4">
+                                <h2>Введіть число</h2>
+                                <AddNumber
+                                    manualNumberInput={state.manualNumberInput}
+                                    setManualNumberInput={(value) =>
+                                        setState((prev) => ({
+                                            ...prev,
+                                            manualNumberInput: value,
+                                        }))
+                                    }
+                                    onAddManualNumber={onAddManualNumber}
+                                />
+                                <AddedNumbers
+                                    manualNumbers={state.manualNumbers}
+                                    onRemoveManualNumber={onRemoveManualNumber}
+                                />
+                            </div>
                         )}
+
                         <SortDirectionComponent
-                            sortDirection={sortDirection}
-                            setSortDirection={setSortDirection}
+                            sortDirection={state.sortDirection}
+                            setSortDirection={(value) =>
+                                setState((prev) => ({
+                                    ...prev,
+                                    sortDirection: value,
+                                }))
+                            }
                         />
                         <SortTypeComponent
-                            sortType={sortType}
-                            setSortType={setSortType}
+                            sortType={state.sortType}
+                            setSortType={(value) =>
+                                setState((prev) => ({
+                                    ...prev,
+                                    sortType: value,
+                                }))
+                            }
                         />
                     </>
                 )}
-                {generateType && (
+
+                {state.generateType && (
                     <Button className="mt-6" type="submit">
                         Відсортувати
                     </Button>
