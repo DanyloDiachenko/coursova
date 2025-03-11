@@ -3,6 +3,8 @@ import { Radio } from "./components/Radio";
 import { Input } from "./components/Input";
 import { Button } from "./components/Button";
 import { Select } from "./components/Select";
+import { toast } from "react-toastify";
+import { MAX_ARRAY_LENGTH, MAX_NUMBER, MIN_NUMBER } from "./constants";
 
 type GenerateType = "auto" | "manual";
 type SortDirection = "asc" | "desc";
@@ -54,7 +56,47 @@ const App = () => {
         null,
     );
     const [manualNumbers, setManualNumbers] = useState<number[]>([]);
+    const [manualNumberInput, setManualNumberInput] = useState<string | null>(
+        null,
+    );
     const [arrayLength, setArrayLength] = useState(arrayLengthOptions[0]);
+
+    const onAddManualNumber = () => {
+        if (manualNumbers.length >= MAX_ARRAY_LENGTH) {
+            toast.error(
+                `Досягнута максимальна кількість чисел - ${MAX_ARRAY_LENGTH}`,
+            );
+            return;
+        }
+
+        if (!manualNumberInput?.trim()) {
+            toast.error("Введіть число");
+            return;
+        }
+
+        const parsedNumber = parseInt(manualNumberInput);
+
+        if (isNaN(parsedNumber)) {
+            toast.error("Введіть коректне число");
+            return;
+        }
+
+        if (parsedNumber > MAX_NUMBER) {
+            toast.error(`Число не може бути більшим за ${MAX_NUMBER}`);
+            return;
+        }
+
+        if (parsedNumber < MIN_NUMBER) {
+            toast.error(`Число не може бути меншим за ${MIN_NUMBER}`);
+            return;
+        }
+
+        setManualNumbers([...manualNumbers, parsedNumber]);
+    };
+
+    const onRemoveManualNumber = (number: number) => {
+        setManualNumbers(manualNumbers.filter((n) => n !== number));
+    };
 
     const onGenerate = (e: FormEvent) => {
         e.preventDefault();
@@ -160,8 +202,19 @@ const App = () => {
                                     <div className="mt-4">
                                         <h2>Введіть число</h2>
                                         <div className="mt-2 flex gap-3 items-center">
-                                            <Input placeholder="Число..." />
-                                            <Button className="px-4">
+                                            <Input
+                                                placeholder="Число..."
+                                                value={manualNumberInput || ""}
+                                                onChange={(e) =>
+                                                    setManualNumberInput(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                            <Button
+                                                className="px-4"
+                                                onClick={onAddManualNumber}
+                                            >
                                                 Додати
                                             </Button>
                                         </div>
@@ -170,21 +223,28 @@ const App = () => {
                                                 Додані числа:
                                             </div>
                                             <div className="flex gap-2 text-wrap">
-                                                {new Array(10)
-                                                    .fill(0)
-                                                    .map((_, index) => (
+                                                {manualNumbers.map(
+                                                    (number, index) => (
                                                         <div
                                                             key={index}
                                                             className="flex items-center gap-2 p-1 px-2 text-sm rounded-md bg-gray-100"
                                                         >
                                                             <span className="text-gray-500 ">
-                                                                12
+                                                                {number}
                                                             </span>
-                                                            <button className="text-red-500 hover:text-red-700 duration-300 mt-[2px]">
+                                                            <button
+                                                                className="text-red-500 hover:text-red-700 duration-300 mt-[2px]"
+                                                                onClick={() =>
+                                                                    onRemoveManualNumber(
+                                                                        number,
+                                                                    )
+                                                                }
+                                                            >
                                                                 ╳
                                                             </button>
                                                         </div>
-                                                    ))}
+                                                    ),
+                                                )}
                                             </div>
                                         </div>
                                     </div>
