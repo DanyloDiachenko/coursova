@@ -18,6 +18,7 @@ import { GenerateType as GenerateTypeComponent } from "./components/InputType";
 import { Diapason } from "./components/Diapason";
 import { InputArraySize } from "./components/ArraySize";
 import { AddNumber } from "./components/AddNumber";
+import { AddedNumbers } from "./components/AddedNumbers";
 
 const arrayLengthOptions = [
     {
@@ -150,7 +151,12 @@ const App = () => {
                                                 onAddManualNumber
                                             }
                                         />
-                                        {/*  */}
+                                        <AddedNumbers
+                                            manualNumbers={manualNumbers}
+                                            onRemoveManualNumber={
+                                                onRemoveManualNumber
+                                            }
+                                        />
                                     </div>
                                 </>
                             )}
