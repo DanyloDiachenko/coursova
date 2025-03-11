@@ -1,13 +1,6 @@
 import { FormEvent, useCallback } from "react";
 import { toast } from "react-toastify";
-import {
-    GenerateType,
-    MAX_ARRAY_LENGTH,
-    MAX_NUMBER,
-    MIN_NUMBER,
-    SortDirection,
-    SortType,
-} from "../../constants";
+import { MAX_ARRAY_LENGTH, MAX_NUMBER, MIN_NUMBER } from "../../constants";
 import { GenerateType as GenerateTypeComponent } from "../InputType";
 import { Diapason } from "../Diapason";
 import { InputArraySize } from "../ArraySize";
