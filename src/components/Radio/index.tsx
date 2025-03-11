@@ -16,13 +16,18 @@ export const Radio = ({
             }`}
         >
             <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center duration-300 ${
                     checked ? "border-purple-700" : "border-gray-400"
                 }`}
             >
-                {checked && (
+                {/* {checked && (
                     <div className="w-3 h-3 bg-purple-700 rounded-full" />
-                )}
+                )} */}
+                <div
+                    className={`w-3 h-3 bg-purple-700 rounded-full duration-300 ${
+                        checked ? "opacity-100" : "opacity-0"
+                    }`}
+                ></div>
             </div>
             <span className="text-lg text-black">{label}</span>
             <input

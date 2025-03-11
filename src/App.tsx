@@ -60,7 +60,7 @@ const App = () => {
                         <h2>Оберіть тип вводу</h2>
                         <div className="flex gap-4 mt-2">
                             <Radio
-                                label="Сгенерувати автоматично"
+                                label="Згенерувати автоматично"
                                 name="generate-type"
                                 value="auto"
                                 onChange={() => setGenerateType("auto")}
@@ -77,45 +77,53 @@ const App = () => {
                             />
                         </div>
                     </div>
-                    {generateType === "auto" ? (
+                    {generateType && (
                         <>
-                            <label className="mt-4 block">
-                                <h2>Введіть діапазон можливих значень</h2>
-                                <div className="flex gap-4 mt-2">
-                                    <Input
-                                        placeholder="Від..."
-                                        value={diapason?.from}
-                                        onChange={(e) =>
-                                            setDiapason({
-                                                ...diapason,
-                                                from: e.target.value,
-                                            })
-                                        }
-                                    />
-                                    <Input
-                                        placeholder="До..."
-                                        value={diapason?.to}
-                                        onChange={(e) =>
-                                            setDiapason({
-                                                ...diapason,
-                                                to: e.target.value,
-                                            })
-                                        }
-                                    />
-                                </div>
-                            </label>
-                            <label className="mt-4 block">
-                                <h2>Введіть розмір масиву</h2>
-                                <div className="mt-2">
-                                    <Input
-                                        placeholder="Розмір масиву..."
-                                        value={arraySize}
-                                        onChange={(e) =>
-                                            setArraySize(e.target.value)
-                                        }
-                                    />
-                                </div>
-                            </label>
+                            {generateType === "auto" ? (
+                                <>
+                                    <label className="mt-4 block">
+                                        <h2>
+                                            Введіть діапазон можливих значень
+                                        </h2>
+                                        <div className="flex gap-4 mt-2">
+                                            <Input
+                                                placeholder="Від..."
+                                                value={diapason?.from}
+                                                onChange={(e) =>
+                                                    setDiapason({
+                                                        ...diapason,
+                                                        from: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                            <Input
+                                                placeholder="До..."
+                                                value={diapason?.to}
+                                                onChange={(e) =>
+                                                    setDiapason({
+                                                        ...diapason,
+                                                        to: e.target.value,
+                                                    })
+                                                }
+                                            />
+                                        </div>
+                                    </label>
+                                    <label className="mt-4 block">
+                                        <h2>Введіть розмір масиву</h2>
+                                        <div className="mt-2">
+                                            <Input
+                                                placeholder="Розмір масиву..."
+                                                value={arraySize}
+                                                onChange={(e) =>
+                                                    setArraySize(e.target.value)
+                                                }
+                                            />
+                                        </div>
+                                    </label>
+                                </>
+                            ) : (
+                                ""
+                            )}
                             <div className="mt-4">
                                 <h2>Оберіть напрям сортування</h2>
                                 <div className="flex gap-4 mt-2">
@@ -177,8 +185,6 @@ const App = () => {
                                 </div>
                             </div>
                         </>
-                    ) : (
-                        <></>
                     )}
                     <Button className="mt-6" type="submit">
                         Відсортувати
