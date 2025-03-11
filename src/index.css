@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+    background: #fbfbff;
+    color: #000000;
+}
+
+h1 {
+    font-weight: 800;
+    font-size: 42px;
+    line-height: 52px;
+    color: #392f5a;
+}
+
+h2 {
+    font-weight: 800;
+    font-size: 24px;
+    line-height: 32px;
+    color: #392f5a;
+}
+
+p {
+    font-size: 16px;
+    line-height: 24px;
+    color: #9c97ad;
+}
