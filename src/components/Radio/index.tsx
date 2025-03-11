@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { RadioProps } from "./Radio.props";
 
 export const Radio = ({
@@ -17,7 +16,7 @@ export const Radio = ({
             }`}
         >
             <div
-                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                     checked ? "border-purple-700" : "border-gray-400"
                 }`}
             >
