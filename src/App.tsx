@@ -2,10 +2,42 @@ import { FormEvent, useState } from "react";
 import { Radio } from "./components/Radio";
 import { Input } from "./components/Input";
 import { Button } from "./components/Button";
+import { Select } from "./components/Select";
 
 type GenerateType = "auto" | "manual";
 type SortDirection = "asc" | "desc";
 type SortType = "block" | "counting" | "radix" | "flash";
+
+const arrayLengthOptions = [
+    {
+        title: "10 видимих чисел",
+        value: "10",
+    },
+    {
+        title: "20 видимих чисел",
+        value: "20",
+    },
+    {
+        title: "50 видимих чисел",
+        value: "50",
+    },
+    {
+        title: "100 видимих чисел",
+        value: "100",
+    },
+    {
+        title: "200 видимих чисел",
+        value: "200",
+    },
+    {
+        title: "500 видимих чисел",
+        value: "500",
+    },
+    {
+        title: "1000 видимих чисел",
+        value: "1000",
+    },
+];
 
 const App = () => {
     const [generateType, setGenerateType] = useState<GenerateType | null>(null);
@@ -22,6 +54,7 @@ const App = () => {
         null,
     );
     const [manualNumbers, setManualNumbers] = useState<number[]>([]);
+    const [arrayLength, setArrayLength] = useState(arrayLengthOptions[0]);
 
     const onGenerate = (e: FormEvent) => {
         e.preventDefault();
@@ -227,6 +260,15 @@ const App = () => {
             <div className="my-6 border-t-2 border-gray-200"></div>
             <div className="m-6">
                 <h2>Результат сортування</h2>
+                <Select
+                    className="mt-2"
+                    options={arrayLengthOptions}
+                    activeOption={arrayLength}
+                    onChange={(option) => setArrayLength(option)}
+                />
+                <div className="mt-6">
+                    <table></table>
+                </div>
             </div>
         </div>
     );
