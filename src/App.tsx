@@ -4,11 +4,18 @@ import { Input } from "./components/Input";
 import { Button } from "./components/Button";
 import { Select } from "./components/Select";
 import { toast } from "react-toastify";
-import { MAX_ARRAY_LENGTH, MAX_NUMBER, MIN_NUMBER } from "./constants";
-
-type GenerateType = "auto" | "manual";
-type SortDirection = "asc" | "desc";
-type SortType = "block" | "counting" | "radix" | "flash";
+import {
+    GenerateType,
+    MAX_ARRAY_LENGTH,
+    MAX_NUMBER,
+    MIN_NUMBER,
+    SortDirection,
+    SortType,
+} from "./constants";
+import { HelloMessage } from "./components/HelloMessage";
+import { Divider } from "./components/Divider";
+import { GenerateType as GenerateTypeComponent } from "./components/InputType";
+import { Diapason } from "./components/Diapason";
 
 const arrayLengthOptions = [
     {
@@ -104,86 +111,25 @@ const App = () => {
 
     return (
         <div>
-            <div className="m-6 pb-0">
-                <h1>Програма Сортування Масивів</h1>
-                <p className="mt-6">
-                    Цей застосунок дозволяє створювати, генерувати та сортувати
-                    послідовності чисел, вказуючи їх розмір, тип чисел
-                    (цілочисельні, дробові, знакосталість тощо), обирати метод
-                    сортування з чотирьох запропонованих, обирати кращий метод
-                    шляхом аналізу результатів (час сортування, складність
-                    алгоритму тощо).
-                </p>
-                <p className="mt-3">
-                    При автоматичній генерації необхідно вказати діапазон
-                    значень (від і до), розмір масиву, вказати напрям сортування
-                    (від більшого або меншого чи навпаки) та обрати тип
-                    сортування.
-                </p>
-                <p className="mt-3">
-                    При вводі масиву самостійно потрібно вводити кожне з чисел
-                    (до 50000 штук), вказавши напрям сортування та можливій з
-                    типів.
-                </p>
-            </div>
-            <div className="my-6 border-t-2 border-gray-200"></div>
+            <HelloMessage />
+            <Divider />
             <div className="m-6">
                 <form
                     onSubmit={onGenerate}
                     className="bg-white border-2 border-gray-200 rounded-lg p-5 inline-block"
                 >
-                    <div>
-                        <h2>Оберіть тип вводу</h2>
-                        <div className="flex gap-4 mt-2">
-                            <Radio
-                                label="Згенерувати автоматично"
-                                name="generate-type"
-                                value="auto"
-                                onChange={() => setGenerateType("auto")}
-                                checked={generateType === "auto"}
-                                id="generate-auto"
-                            />
-                            <Radio
-                                label="Ввести самостійно"
-                                name="generate-type"
-                                value="manual"
-                                onChange={() => setGenerateType("manual")}
-                                checked={generateType === "manual"}
-                                id="generate-manual"
-                            />
-                        </div>
-                    </div>
+                    <GenerateTypeComponent
+                        generateType={generateType}
+                        setGenerateType={setGenerateType}
+                    />
                     {generateType && (
                         <>
                             {generateType === "auto" ? (
                                 <>
-                                    <label className="mt-4 block">
-                                        <h2>
-                                            Введіть діапазон можливих значень
-                                        </h2>
-                                        <div className="flex gap-4 mt-2">
-                                            <Input
-                                                placeholder="Від..."
-                                                value={diapason?.from}
-                                                onChange={(e) =>
-                                                    setDiapason({
-                                                        ...diapason,
-                                                        from: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                            <Input
-                                                placeholder="До..."
-                                                value={diapason?.to}
-                                                onChange={(e) =>
-                                                    setDiapason({
-                                                        ...diapason,
-                                                        to: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </div>
-                                    </label>
+                                    <Diapason
+                                        diapason={diapason}
+                                        setDiapason={setDiapason}
+                                    />
                                     <label className="mt-4 block">
                                         <h2>Введіть розмір масиву</h2>
                                         <div className="mt-2">
