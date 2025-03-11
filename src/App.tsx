@@ -16,6 +16,8 @@ import { HelloMessage } from "./components/HelloMessage";
 import { Divider } from "./components/Divider";
 import { GenerateType as GenerateTypeComponent } from "./components/InputType";
 import { Diapason } from "./components/Diapason";
+import { InputArraySize } from "./components/ArraySize";
+import { AddNumber } from "./components/AddNumber";
 
 const arrayLengthOptions = [
     {
@@ -63,9 +65,7 @@ const App = () => {
         null,
     );
     const [manualNumbers, setManualNumbers] = useState<number[]>([]);
-    const [manualNumberInput, setManualNumberInput] = useState<string | null>(
-        null,
-    );
+    const [manualNumberInput, setManualNumberInput] = useState<string>("");
     const [arrayLength, setArrayLength] = useState(arrayLengthOptions[0]);
 
     const onAddManualNumber = () => {
@@ -130,69 +130,27 @@ const App = () => {
                                         diapason={diapason}
                                         setDiapason={setDiapason}
                                     />
-                                    <label className="mt-4 block">
-                                        <h2>Введіть розмір масиву</h2>
-                                        <div className="mt-2">
-                                            <Input
-                                                placeholder="Розмір масиву..."
-                                                value={arraySize}
-                                                onChange={(e) =>
-                                                    setArraySize(e.target.value)
-                                                }
-                                            />
-                                        </div>
-                                    </label>
+                                    <InputArraySize
+                                        arraySize={arraySize}
+                                        setArraySize={setArraySize}
+                                    />
                                 </>
                             ) : (
                                 <>
                                     <div className="mt-4">
                                         <h2>Введіть число</h2>
-                                        <div className="mt-2 flex gap-3 items-center">
-                                            <Input
-                                                placeholder="Число..."
-                                                value={manualNumberInput || ""}
-                                                onChange={(e) =>
-                                                    setManualNumberInput(
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            />
-                                            <Button
-                                                className="px-4"
-                                                onClick={onAddManualNumber}
-                                            >
-                                                Додати
-                                            </Button>
-                                        </div>
-                                        <div className="flex items-center mt-2 gap-2">
-                                            <div className="text-gray-500">
-                                                Додані числа:
-                                            </div>
-                                            <div className="flex gap-2 text-wrap">
-                                                {manualNumbers.map(
-                                                    (number, index) => (
-                                                        <div
-                                                            key={index}
-                                                            className="flex items-center gap-2 p-1 px-2 text-sm rounded-md bg-gray-100"
-                                                        >
-                                                            <span className="text-gray-500 ">
-                                                                {number}
-                                                            </span>
-                                                            <button
-                                                                className="text-red-500 hover:text-red-700 duration-300 mt-[2px]"
-                                                                onClick={() =>
-                                                                    onRemoveManualNumber(
-                                                                        number,
-                                                                    )
-                                                                }
-                                                            >
-                                                                ╳
-                                                            </button>
-                                                        </div>
-                                                    ),
-                                                )}
-                                            </div>
-                                        </div>
+                                        <AddNumber
+                                            manualNumberInput={
+                                                manualNumberInput
+                                            }
+                                            setManualNumberInput={
+                                                setManualNumberInput
+                                            }
+                                            onAddManualNumber={
+                                                onAddManualNumber
+                                            }
+                                        />
+                                        {/*  */}
                                     </div>
                                 </>
                             )}
