@@ -312,9 +312,11 @@ const App = () => {
                             </div>
                         </>
                     )}
-                    <Button className="mt-6" type="submit">
-                        Відсортувати
-                    </Button>
+                    {generateType && (
+                        <Button className="mt-6" type="submit">
+                            Відсортувати
+                        </Button>
+                    )}
                 </form>
             </div>
             <div className="my-6 border-t-2 border-gray-200"></div>
