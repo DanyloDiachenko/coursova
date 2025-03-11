@@ -19,6 +19,7 @@ import { Diapason } from "./components/Diapason";
 import { InputArraySize } from "./components/ArraySize";
 import { AddNumber } from "./components/AddNumber";
 import { AddedNumbers } from "./components/AddedNumbers";
+import { SortDirection as SortDirectionComponent } from "./components/SortDirection";
 
 const arrayLengthOptions = [
     {
@@ -160,29 +161,10 @@ const App = () => {
                                     </div>
                                 </>
                             )}
-                            <div className="mt-4">
-                                <h2>Оберіть напрям сортування</h2>
-                                <div className="flex gap-4 mt-2">
-                                    <Radio
-                                        label="За зростанням"
-                                        value="asc"
-                                        onChange={() => setSortDirection("asc")}
-                                        checked={sortDirection === "asc"}
-                                        id="sort-asc"
-                                        name="sort-direction"
-                                    />
-                                    <Radio
-                                        label="За спаданням"
-                                        value="desc"
-                                        onChange={() =>
-                                            setSortDirection("desc")
-                                        }
-                                        checked={sortDirection === "desc"}
-                                        id="sort-desc"
-                                        name="sort-direction"
-                                    />
-                                </div>
-                            </div>
+                            <SortDirectionComponent
+                                sortDirection={sortDirection}
+                                setSortDirection={setSortDirection}
+                            />
                             <div className="mt-4">
                                 <h2>Оберіть тип сортування</h2>
                                 <div className="flex gap-4 mt-2">
