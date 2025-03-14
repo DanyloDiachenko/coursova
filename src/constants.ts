@@ -65,7 +65,7 @@ export const generateArray = (
     for (let i = 0; i < arraySize; i++) {
         const randomValue =
             Math.random() * (diapason.to - diapason.from) + diapason.from;
-        
+
         array.push(isIntegerRange ? Math.floor(randomValue) : randomValue);
     }
 
@@ -134,4 +134,113 @@ export const countingSort = (array: number[], direction: SortDirection) => {
     }
 
     return direction === "desc" ? outputArray.reverse() : outputArray;
+};
+
+const countSortHelper = (arr: number[], exp: number) => {
+    const length = arr.length;
+    let output = Array(length);
+    let count = Array(10).fill(0, 0);
+
+    for (let i = 0; i < length; i++) {
+        const digit = Math.floor(arr[i] / exp) % 10;
+        count[digit]++;
+    }
+
+    for (let i = 1; i < 10; i++) {
+        count[i] += count[i - 1];
+    }
+
+    for (let i = length - 1; i >= 0; i--) {
+        const digit = Math.floor(arr[i] / exp) % 10;
+        output[count[digit] - 1] = arr[i];
+        count[digit]--;
+    }
+
+    return output;
+};
+
+export const radixSort = (arr: number[], direction: SortDirection) => {
+    const maxNumber = Math.max(...arr);
+    let sortedArr = [...arr];
+
+    for (let exp = 1; Math.floor(maxNumber / exp) > 0; exp *= 10) {
+        const sortedIteration = countSortHelper(sortedArr, exp);
+        sortedArr = sortedIteration;
+    }
+
+    return direction === "desc" ? sortedArr.reverse() : sortedArr;
+};
+
+export const flashSort = (arr: number[], direction: SortDirection) => {
+    let max = 0;
+    let min = arr[0];
+    const n = arr.length;
+    const m = ~~(0.45 * n);
+    const l = new Array(m);
+
+    for (let i = 1; i < n; ++i) {
+        if (arr[i] < min) {
+            min = arr[i];
+        }
+        if (arr[i] > arr[max]) {
+            max = i;
+        }
+    }
+
+    if (min === arr[max]) {
+        return arr;
+    }
+
+    const c1 = (m - 1) / (arr[max] - min);
+
+    for (let k = 0; k < m; k++) {
+        l[k] = 0;
+    }
+    for (let j = 0; j < n; ++j) {
+        const k = ~~(c1 * (arr[j] - min));
+        ++l[k];
+    }
+
+    for (let p = 1; p < m; ++p) {
+        l[p] = l[p] + l[p - 1];
+    }
+
+    let hold = arr[max];
+    arr[max] = arr[0];
+    arr[0] = hold;
+
+    let move = 0,
+        t: number,
+        flash: number;
+    let j = 0;
+    let k = m - 1;
+
+    while (move < n - 1) {
+        while (j > l[k] - 1) {
+            ++j;
+            k = ~~(c1 * (arr[j] - min));
+        }
+        if (k < 0) break;
+        flash = arr[j];
+        while (j !== l[k]) {
+            k = ~~(c1 * (flash - min));
+            t = --l[k];
+            hold = arr[t];
+            arr[t] = flash;
+            flash = hold;
+            ++move;
+        }
+    }
+
+    for (j = 1; j < n; j++) {
+        hold = arr[j];
+        let i = j - 1;
+        while (i >= 0 && arr[i] > hold) {
+            arr[i + 1] = arr[i];
+            i--;
+        }
+        arr[i + 1] = hold;
+    }
+
+    return direction === "desc" ? arr.reverse() : arr;
 };

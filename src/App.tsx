@@ -6,12 +6,14 @@ import { SortingResult } from "./components/SortingResult";
 import {
     blockSort,
     countingSort,
+    flashSort,
     generateArray,
     MainFormState,
     MAX_ARRAY_LENGTH,
     MAX_NUMBER,
     MIN_ARRAY_LENGTH,
     MIN_NUMBER,
+    radixSort,
     SortDirection,
 } from "./constants";
 import { toast } from "react-toastify";
@@ -130,25 +132,51 @@ const App = () => {
             arrayToSort = manualNumbers.map((item) => item.value);
         }
 
-        if (sortType === "counting") {
+        if (sortType === "counting" || sortType === "radix") {
             if (Math.min(...arrayToSort) < 0) {
                 toast.error(
-                    "Сортування підрахунком не підтримує від'ємні числа",
+                    "Сортування підрахунком та порозрядне сортування не підтримує від'ємні числа",
                 );
                 return;
             }
             if (!arrayToSort.every(Number.isInteger)) {
                 toast.error(
-                    "Сортування підрахунком підтримує тільки цілі числа",
+                    "Сортування підрахунком та порозрядне сортування підтримує тільки цілі числа",
                 );
                 return;
             }
         }
 
-        const sortedArray =
-            sortType === "block"
-                ? blockSort(arrayToSort, sortDirection as SortDirection)
-                : countingSort(arrayToSort, sortDirection as SortDirection);
+        let sortedArray: number[] = [];
+        switch (sortType) {
+            case "block":
+                sortedArray = blockSort(
+                    arrayToSort,
+                    sortDirection as SortDirection,
+                );
+                break;
+            case "counting":
+                sortedArray = countingSort(
+                    arrayToSort,
+                    sortDirection as SortDirection,
+                );
+                break;
+            case "radix":
+                sortedArray = radixSort(
+                    arrayToSort,
+                    sortDirection as SortDirection,
+                );
+                break;
+            case "flash":
+                sortedArray = flashSort(
+                    arrayToSort,
+                    sortDirection as SortDirection,
+                );
+                break;
+            default:
+                toast.error("Невалідний тип сортування");
+                return;
+        }
 
         setState((prev) => ({
             ...prev,
