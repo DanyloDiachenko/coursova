@@ -11,6 +11,7 @@ import {
     MIN_NUMBER,
 } from "./constants";
 import { toast } from "react-toastify";
+import { Spinner } from "./components/Spinner";
 
 const initialState: MainFormState = {
     generateType: null,
@@ -22,6 +23,7 @@ const initialState: MainFormState = {
     manualNumberInput: "",
     isSorting: false,
     sortingResult: [],
+    sortingTime: 0,
 };
 
 const App = () => {
@@ -30,92 +32,100 @@ const App = () => {
     const validateDiapason = () => {
         if (!state.diapason.from.trim().length) {
             toast.error("Не вказано діапазон чисел від");
-            return;
+            return false;
         }
         if (!state.diapason.to.trim().length) {
             toast.error("Не вказано діапазон чисел до");
-            return;
+            return false;
         }
         const diapasonFrom = parseInt(state.diapason.from);
         if (isNaN(diapasonFrom)) {
             toast.error("Діапазон чисел від не є числом");
-            return;
+            return false;
         }
 
         const diapasonTo = parseInt(state.diapason.to);
         if (isNaN(diapasonTo)) {
             toast.error("Діапазон чисел до не є числом");
-            return;
+            return false;
         }
         if (diapasonFrom < MIN_NUMBER) {
             toast.error(
                 `Діапазон чисел від не може бути меншим за ${MIN_NUMBER}`,
             );
-            return;
+            return false;
         }
         if (diapasonFrom > MAX_NUMBER) {
             toast.error(
                 `Діапазон чисел від не може бути більшим за ${MAX_NUMBER}`,
             );
-            return;
+            return false;
         }
         if (diapasonTo < MIN_NUMBER) {
             toast.error(
                 `Діапазон чисел до не може бути меншим за ${MIN_NUMBER}`,
             );
-            return;
+            return false;
         }
         if (diapasonTo > MAX_NUMBER) {
             toast.error(
                 `Діапазон чисел до не може бути більшим за ${MAX_NUMBER}`,
             );
-            return;
+            return false;
         }
         if (diapasonFrom === diapasonTo) {
             toast.error(
                 "Діапазон чисел від не може бути рівним діапазону чисел до",
             );
-            return;
+            return false;
         }
+
+        return true;
     };
 
     const validateArraySize = () => {
         if (!state.arraySize.trim().length) {
             toast.error("Не вказано розмір масиву");
-            return;
+            return false;
         }
 
         const arraySize = parseInt(state.arraySize);
         if (isNaN(arraySize)) {
             toast.error("Розмір масиву не є числом");
-            return;
+            return false;
         }
         if (arraySize < MIN_ARRAY_LENGTH) {
             toast.error(
                 `Розмір масиву не може бути меншим за ${MIN_ARRAY_LENGTH}`,
             );
-            return;
+            return false;
         }
         if (arraySize > MAX_ARRAY_LENGTH) {
             toast.error(
                 `Розмір масиву не може бути більшим за ${MAX_ARRAY_LENGTH}`,
             );
-            return;
+            return false;
         }
+
+        return true;
     };
 
     const validateSortDirection = () => {
         if (!state.sortDirection) {
             toast.error("Не вказано напрямок сортування");
-            return;
+            return false;
         }
+
+        return true;
     };
 
     const validateSortType = () => {
         if (!state.sortType) {
             toast.error("Не вказано тип сортування");
-            return;
+            return false;
         }
+
+        return true;
     };
 
     const validateManualNumberInput = () => {
@@ -128,59 +138,91 @@ const App = () => {
             toast.error(
                 `Число для додавання вручну не може бути меншим за ${MIN_NUMBER}`,
             );
-            return;
+            return false;
         }
         if (parsedNumber > MAX_NUMBER) {
             toast.error(
                 `Число для додавання вручну не може бути більшим за ${MAX_NUMBER}`,
             );
-            return;
+            return false;
         }
+
+        return true;
     };
 
     const validateManualNumbers = () => {
         if (state.manualNumbers.length === 0) {
             toast.error("Не вказано числа для сортування");
-            return;
+            return false;
         }
         if (state.manualNumbers.length < MIN_ARRAY_LENGTH) {
             toast.error(
                 `Не може бути менше ${MIN_ARRAY_LENGTH} чисел для сортування`,
             );
-            return;
+            return false;
         }
         if (state.manualNumbers.length > MAX_ARRAY_LENGTH) {
             toast.error(
                 `Не може бути більше ${MAX_ARRAY_LENGTH} чисел для сортування`,
             );
-            return;
+            return false;
         }
+
+        return true;
+    };
+
+    const validateForm = (): boolean => {
+        let hasErrors = false;
+
+        switch (state.generateType) {
+            case "auto": {
+                hasErrors = !validateDiapason() || hasErrors;
+                hasErrors = !validateArraySize() || hasErrors;
+                hasErrors = !validateSortDirection() || hasErrors;
+                hasErrors = !validateSortType() || hasErrors;
+                break;
+            }
+            case "manual": {
+                if (state.manualNumberInput.trim().length > 0) {
+                    hasErrors = !validateManualNumberInput() || hasErrors;
+                }
+                hasErrors = !validateManualNumbers() || hasErrors;
+                hasErrors = !validateSortDirection() || hasErrors;
+                hasErrors = !validateSortType() || hasErrors;
+                break;
+            }
+            default:
+                toast.error("Не вказано тип генерації");
+                return false;
+        }
+
+        return !hasErrors;
     };
 
     const onGenerate = (e: FormEvent) => {
         e.preventDefault();
 
-        switch (state.generateType) {
+        if (!validateForm()) return;
+
+        const generateType = state.generateType;
+        const sortDirection = state.sortDirection;
+        const sortType = state.sortType;
+
+        switch (generateType) {
             case "auto": {
-                validateDiapason();
-                validateArraySize();
-                validateSortDirection();
-                validateSortType();
+                const diapason = state.diapason;
+                const arraySize = state.arraySize;
 
                 break;
             }
             case "manual": {
-                if (state.manualNumberInput.trim().length > 0) {
-                    validateManualNumberInput();
-                }
-                validateManualNumbers();
-                validateSortDirection();
-                validateSortType();
+                const manualNumbers = state.manualNumbers;
 
                 break;
             }
             default:
                 toast.error("Не вказано тип генерації");
+                return;
         }
     };
 
@@ -194,13 +236,14 @@ const App = () => {
                 onGenerate={onGenerate}
             />
             <Divider />
-            {state.sortingResult.length ? (
+            {!state.isSorting && state.sortingResult.length ? (
                 <>
                     <SortingResult />
                 </>
             ) : (
-                <></>
+                ""
             )}
+            {state.isSorting && <Spinner />}
         </div>
     );
 };

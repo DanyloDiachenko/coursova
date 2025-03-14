@@ -49,4 +49,5 @@ export interface MainFormState {
     manualNumberInput: string;
     isSorting: boolean;
     sortingResult: number[];
+    sortingTime: number;
 }
