@@ -59,12 +59,14 @@ export const generateArray = (
     diapason: { from: number; to: number },
 ) => {
     const array = [];
+    const isIntegerRange =
+        Number.isInteger(diapason.from) && Number.isInteger(diapason.to);
 
     for (let i = 0; i < arraySize; i++) {
-        array.push(
-            Math.floor(Math.random() * (diapason.to - diapason.from + 1)) +
-                diapason.from,
-        );
+        const randomValue =
+            Math.random() * (diapason.to - diapason.from) + diapason.from;
+        
+        array.push(isIntegerRange ? Math.floor(randomValue) : randomValue);
     }
 
     return array;

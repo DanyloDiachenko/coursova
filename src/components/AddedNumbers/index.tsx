@@ -17,6 +17,7 @@ export const AddedNumbers = ({
                         <button
                             className="text-red-500 hover:text-red-700 duration-300 mt-[2px]"
                             onClick={() => onRemoveManualNumber(number.id)}
+                            type="button"
                         >
                             ╳
                         </button>
