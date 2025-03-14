@@ -11,7 +11,7 @@ import { SortType as SortTypeComponent } from "../SortType";
 import { Button } from "../Button";
 import { MainFormProps } from "./MainForm.props";
 
-export const MainForm = ({ state, setState }: MainFormProps) => {
+export const MainForm = ({ state, setState, onGenerate }: MainFormProps) => {
     const onAddManualNumber = useCallback(() => {
         if (state.manualNumbers.length >= MAX_ARRAY_LENGTH) {
             toast.error(
@@ -54,10 +54,6 @@ export const MainForm = ({ state, setState }: MainFormProps) => {
         },
         [setState],
     );
-
-    const onGenerate = (e: FormEvent) => {
-        e.preventDefault();
-    };
 
     return (
         <div className="m-6">

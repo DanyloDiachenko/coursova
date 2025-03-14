@@ -2,7 +2,7 @@ export const MAX_NUMBER = 50000;
 export const MIN_NUMBER = -50000;
 
 export const MAX_ARRAY_LENGTH = 50000;
-export const MIN_ARRAY_LENGTH = 1;
+export const MIN_ARRAY_LENGTH = 2;
 
 export type GenerateType = "auto" | "manual";
 export type SortDirection = "asc" | "desc";
@@ -47,4 +47,6 @@ export interface MainFormState {
     sortDirection: SortDirection | null;
     manualNumbers: number[];
     manualNumberInput: string;
+    isSorting: boolean;
+    sortingResult: number[];
 }

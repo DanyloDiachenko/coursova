@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { HelloMessage } from "./components/HelloMessage";
 import { Divider } from "./components/Divider";
 import { MainForm } from "./components/MainForm";
 import { SortingResult } from "./components/SortingResult";
-import { MainFormState } from "./constants";
+import {
+    MainFormState,
+    MAX_ARRAY_LENGTH,
+    MAX_NUMBER,
+    MIN_ARRAY_LENGTH,
+    MIN_NUMBER,
+} from "./constants";
+import { toast } from "react-toastify";
 
 const initialState: MainFormState = {
     generateType: null,
@@ -13,18 +20,187 @@ const initialState: MainFormState = {
     sortDirection: null,
     manualNumbers: [],
     manualNumberInput: "",
+    isSorting: false,
+    sortingResult: [],
 };
 
 const App = () => {
     const [state, setState] = useState<MainFormState>(initialState);
 
+    const validateDiapason = () => {
+        if (!state.diapason.from.trim().length) {
+            toast.error("Не вказано діапазон чисел від");
+            return;
+        }
+        if (!state.diapason.to.trim().length) {
+            toast.error("Не вказано діапазон чисел до");
+            return;
+        }
+        const diapasonFrom = parseInt(state.diapason.from);
+        if (isNaN(diapasonFrom)) {
+            toast.error("Діапазон чисел від не є числом");
+            return;
+        }
+
+        const diapasonTo = parseInt(state.diapason.to);
+        if (isNaN(diapasonTo)) {
+            toast.error("Діапазон чисел до не є числом");
+            return;
+        }
+        if (diapasonFrom < MIN_NUMBER) {
+            toast.error(
+                `Діапазон чисел від не може бути меншим за ${MIN_NUMBER}`,
+            );
+            return;
+        }
+        if (diapasonFrom > MAX_NUMBER) {
+            toast.error(
+                `Діапазон чисел від не може бути більшим за ${MAX_NUMBER}`,
+            );
+            return;
+        }
+        if (diapasonTo < MIN_NUMBER) {
+            toast.error(
+                `Діапазон чисел до не може бути меншим за ${MIN_NUMBER}`,
+            );
+            return;
+        }
+        if (diapasonTo > MAX_NUMBER) {
+            toast.error(
+                `Діапазон чисел до не може бути більшим за ${MAX_NUMBER}`,
+            );
+            return;
+        }
+        if (diapasonFrom === diapasonTo) {
+            toast.error(
+                "Діапазон чисел від не може бути рівним діапазону чисел до",
+            );
+            return;
+        }
+    };
+
+    const validateArraySize = () => {
+        if (!state.arraySize.trim().length) {
+            toast.error("Не вказано розмір масиву");
+            return;
+        }
+
+        const arraySize = parseInt(state.arraySize);
+        if (isNaN(arraySize)) {
+            toast.error("Розмір масиву не є числом");
+            return;
+        }
+        if (arraySize < MIN_ARRAY_LENGTH) {
+            toast.error(
+                `Розмір масиву не може бути меншим за ${MIN_ARRAY_LENGTH}`,
+            );
+            return;
+        }
+        if (arraySize > MAX_ARRAY_LENGTH) {
+            toast.error(
+                `Розмір масиву не може бути більшим за ${MAX_ARRAY_LENGTH}`,
+            );
+            return;
+        }
+    };
+
+    const validateSortDirection = () => {
+        if (!state.sortDirection) {
+            toast.error("Не вказано напрямок сортування");
+            return;
+        }
+    };
+
+    const validateSortType = () => {
+        if (!state.sortType) {
+            toast.error("Не вказано тип сортування");
+            return;
+        }
+    };
+
+    const validateManualNumberInput = () => {
+        const parsedNumber = parseInt(state.manualNumberInput);
+        if (isNaN(parsedNumber)) {
+            toast.error("Число для додавання вручну не є числом");
+            return;
+        }
+        if (parsedNumber < MIN_NUMBER) {
+            toast.error(
+                `Число для додавання вручну не може бути меншим за ${MIN_NUMBER}`,
+            );
+            return;
+        }
+        if (parsedNumber > MAX_NUMBER) {
+            toast.error(
+                `Число для додавання вручну не може бути більшим за ${MAX_NUMBER}`,
+            );
+            return;
+        }
+    };
+
+    const validateManualNumbers = () => {
+        if (state.manualNumbers.length === 0) {
+            toast.error("Не вказано числа для сортування");
+            return;
+        }
+        if (state.manualNumbers.length < MIN_ARRAY_LENGTH) {
+            toast.error(
+                `Не може бути менше ${MIN_ARRAY_LENGTH} чисел для сортування`,
+            );
+            return;
+        }
+        if (state.manualNumbers.length > MAX_ARRAY_LENGTH) {
+            toast.error(
+                `Не може бути більше ${MAX_ARRAY_LENGTH} чисел для сортування`,
+            );
+            return;
+        }
+    };
+
+    const onGenerate = (e: FormEvent) => {
+        e.preventDefault();
+
+        switch (state.generateType) {
+            case "auto": {
+                validateDiapason();
+                validateArraySize();
+                validateSortDirection();
+                validateSortType();
+
+                break;
+            }
+            case "manual": {
+                if (state.manualNumberInput.trim().length > 0) {
+                    validateManualNumberInput();
+                }
+                validateManualNumbers();
+                validateSortDirection();
+                validateSortType();
+
+                break;
+            }
+            default:
+                toast.error("Не вказано тип генерації");
+        }
+    };
+
     return (
         <div>
             <HelloMessage />
             <Divider />
-            <MainForm state={state} setState={setState} />
+            <MainForm
+                state={state}
+                setState={setState}
+                onGenerate={onGenerate}
+            />
             <Divider />
-            <SortingResult />
+            {state.sortingResult.length ? (
+                <>
+                    <SortingResult />
+                </>
+            ) : (
+                <></>
+            )}
         </div>
     );
 };
