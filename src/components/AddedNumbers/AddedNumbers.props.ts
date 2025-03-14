@@ -1,4 +1,4 @@
 export interface AddedNumbersProps {
-    manualNumbers: number[];
+    manualNumbers: { value: number; id: number }[];
     onRemoveManualNumber: (number: number) => void;
 }

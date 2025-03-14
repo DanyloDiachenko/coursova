@@ -4,11 +4,15 @@ import { Divider } from "./components/Divider";
 import { MainForm } from "./components/MainForm";
 import { SortingResult } from "./components/SortingResult";
 import {
+    blockSort,
+    countingSort,
+    generateArray,
     MainFormState,
     MAX_ARRAY_LENGTH,
     MAX_NUMBER,
     MIN_ARRAY_LENGTH,
     MIN_NUMBER,
+    SortDirection,
 } from "./constants";
 import { toast } from "react-toastify";
 import { Spinner } from "./components/Spinner";
@@ -29,201 +33,130 @@ const initialState: MainFormState = {
 const App = () => {
     const [state, setState] = useState<MainFormState>(initialState);
 
-    const validateDiapason = () => {
-        if (!state.diapason.from.trim().length) {
-            toast.error("Не вказано діапазон чисел від");
-            return false;
-        }
-        if (!state.diapason.to.trim().length) {
-            toast.error("Не вказано діапазон чисел до");
-            return false;
-        }
-        const diapasonFrom = parseInt(state.diapason.from);
-        if (isNaN(diapasonFrom)) {
-            toast.error("Діапазон чисел від не є числом");
-            return false;
-        }
+    const validateRange = (from: string, to: string) => {
+        const parsedFrom = parseFloat(from);
+        const parsedTo = parseFloat(to);
 
-        const diapasonTo = parseInt(state.diapason.to);
-        if (isNaN(diapasonTo)) {
-            toast.error("Діапазон чисел до не є числом");
+        if (!from.trim().length || isNaN(parsedFrom)) {
+            toast.error("Невірне значення діапазону 'від'");
             return false;
         }
-        if (diapasonFrom < MIN_NUMBER) {
+        if (!to.trim().length || isNaN(parsedTo)) {
+            toast.error("Невірне значення діапазону 'до'");
+            return false;
+        }
+        if (parsedFrom < MIN_NUMBER || parsedFrom > MAX_NUMBER) {
             toast.error(
-                `Діапазон чисел від не може бути меншим за ${MIN_NUMBER}`,
+                `Діапазон 'від' має бути між ${MIN_NUMBER} і ${MAX_NUMBER}`,
             );
             return false;
         }
-        if (diapasonFrom > MAX_NUMBER) {
+        if (parsedTo < MIN_NUMBER || parsedTo > MAX_NUMBER) {
             toast.error(
-                `Діапазон чисел від не може бути більшим за ${MAX_NUMBER}`,
+                `Діапазон 'до' має бути між ${MIN_NUMBER} і ${MAX_NUMBER}`,
             );
             return false;
         }
-        if (diapasonTo < MIN_NUMBER) {
-            toast.error(
-                `Діапазон чисел до не може бути меншим за ${MIN_NUMBER}`,
-            );
-            return false;
-        }
-        if (diapasonTo > MAX_NUMBER) {
-            toast.error(
-                `Діапазон чисел до не може бути більшим за ${MAX_NUMBER}`,
-            );
-            return false;
-        }
-        if (diapasonFrom === diapasonTo) {
-            toast.error(
-                "Діапазон чисел від не може бути рівним діапазону чисел до",
-            );
+        if (parsedFrom >= parsedTo) {
+            toast.error("Діапазон 'від' має бути меншим за 'до'");
             return false;
         }
 
         return true;
     };
 
-    const validateArraySize = () => {
-        if (!state.arraySize.trim().length) {
-            toast.error("Не вказано розмір масиву");
-            return false;
-        }
+    const validateArraySize = (size: string) => {
+        const parsedSize = parseInt(size);
 
-        const arraySize = parseInt(state.arraySize);
-        if (isNaN(arraySize)) {
-            toast.error("Розмір масиву не є числом");
-            return false;
-        }
-        if (arraySize < MIN_ARRAY_LENGTH) {
+        if (
+            !size.trim().length ||
+            isNaN(parsedSize) ||
+            parsedSize < MIN_ARRAY_LENGTH ||
+            parsedSize > MAX_ARRAY_LENGTH
+        ) {
             toast.error(
-                `Розмір масиву не може бути меншим за ${MIN_ARRAY_LENGTH}`,
+                `Розмір масиву має бути між ${MIN_ARRAY_LENGTH} і ${MAX_ARRAY_LENGTH}`,
             );
             return false;
         }
-        if (arraySize > MAX_ARRAY_LENGTH) {
-            toast.error(
-                `Розмір масиву не може бути більшим за ${MAX_ARRAY_LENGTH}`,
-            );
-            return false;
-        }
-
-        return true;
-    };
-
-    const validateSortDirection = () => {
-        if (!state.sortDirection) {
-            toast.error("Не вказано напрямок сортування");
-            return false;
-        }
-
-        return true;
-    };
-
-    const validateSortType = () => {
-        if (!state.sortType) {
-            toast.error("Не вказано тип сортування");
-            return false;
-        }
-
-        return true;
-    };
-
-    const validateManualNumberInput = () => {
-        const parsedNumber = parseInt(state.manualNumberInput);
-        if (isNaN(parsedNumber)) {
-            toast.error("Число для додавання вручну не є числом");
-            return;
-        }
-        if (parsedNumber < MIN_NUMBER) {
-            toast.error(
-                `Число для додавання вручну не може бути меншим за ${MIN_NUMBER}`,
-            );
-            return false;
-        }
-        if (parsedNumber > MAX_NUMBER) {
-            toast.error(
-                `Число для додавання вручну не може бути більшим за ${MAX_NUMBER}`,
-            );
-            return false;
-        }
-
-        return true;
-    };
-
-    const validateManualNumbers = () => {
-        if (state.manualNumbers.length === 0) {
-            toast.error("Не вказано числа для сортування");
-            return false;
-        }
-        if (state.manualNumbers.length < MIN_ARRAY_LENGTH) {
-            toast.error(
-                `Не може бути менше ${MIN_ARRAY_LENGTH} чисел для сортування`,
-            );
-            return false;
-        }
-        if (state.manualNumbers.length > MAX_ARRAY_LENGTH) {
-            toast.error(
-                `Не може бути більше ${MAX_ARRAY_LENGTH} чисел для сортування`,
-            );
-            return false;
-        }
-
         return true;
     };
 
     const validateForm = (): boolean => {
-        let hasErrors = false;
-
-        switch (state.generateType) {
-            case "auto": {
-                hasErrors = !validateDiapason() || hasErrors;
-                hasErrors = !validateArraySize() || hasErrors;
-                hasErrors = !validateSortDirection() || hasErrors;
-                hasErrors = !validateSortType() || hasErrors;
-                break;
-            }
-            case "manual": {
-                if (state.manualNumberInput.trim().length > 0) {
-                    hasErrors = !validateManualNumberInput() || hasErrors;
-                }
-                hasErrors = !validateManualNumbers() || hasErrors;
-                hasErrors = !validateSortDirection() || hasErrors;
-                hasErrors = !validateSortType() || hasErrors;
-                break;
-            }
-            default:
-                toast.error("Не вказано тип генерації");
-                return false;
+        if (!state.sortType || !state.sortDirection) {
+            toast.error("Не вказано тип або напрямок сортування");
+            return false;
         }
 
-        return !hasErrors;
+        if (state.generateType === "auto") {
+            return (
+                validateRange(state.diapason.from, state.diapason.to) &&
+                validateArraySize(state.arraySize)
+            );
+        }
+
+        if (
+            state.generateType === "manual" &&
+            state.manualNumbers.length < MIN_ARRAY_LENGTH
+        ) {
+            toast.error(`Необхідно ввести мінімум ${MIN_ARRAY_LENGTH} чисел`);
+            return false;
+        }
+
+        return true;
     };
 
     const onGenerate = (e: FormEvent) => {
         e.preventDefault();
-
         if (!validateForm()) return;
 
-        const generateType = state.generateType;
-        const sortDirection = state.sortDirection;
-        const sortType = state.sortType;
+        const {
+            generateType,
+            sortDirection,
+            sortType,
+            diapason,
+            arraySize,
+            manualNumbers,
+        } = state;
 
-        switch (generateType) {
-            case "auto": {
-                const diapason = state.diapason;
-                const arraySize = state.arraySize;
+        let arrayToSort = [];
 
-                break;
-            }
-            case "manual": {
-                const manualNumbers = state.manualNumbers;
-
-                break;
-            }
-            default:
-                toast.error("Не вказано тип генерації");
-                return;
+        if (generateType === "auto") {
+            arrayToSort = generateArray(parseInt(arraySize), {
+                from: parseFloat(diapason.from),
+                to: parseFloat(diapason.to),
+            });
+        } else {
+            arrayToSort = manualNumbers.map((item) => item.value);
         }
+
+        if (sortType === "counting") {
+            if (Math.min(...arrayToSort) < 0) {
+                toast.error(
+                    "Сортування підрахунком не підтримує від'ємні числа",
+                );
+                return;
+            }
+            if (!arrayToSort.every(Number.isInteger)) {
+                toast.error(
+                    "Сортування підрахунком підтримує тільки цілі числа",
+                );
+                return;
+            }
+        }
+
+        const sortedArray =
+            sortType === "block"
+                ? blockSort(arrayToSort, sortDirection as SortDirection)
+                : countingSort(arrayToSort, sortDirection as SortDirection);
+
+        setState((prev) => ({
+            ...prev,
+            sortingResult: sortedArray,
+            isSorting: false,
+        }));
+
+        console.log(sortedArray);
     };
 
     return (
@@ -236,14 +169,11 @@ const App = () => {
                 onGenerate={onGenerate}
             />
             <Divider />
-            {!state.isSorting && state.sortingResult.length ? (
-                <>
-                    <SortingResult />
-                </>
+            {state.isSorting ? (
+                <Spinner />
             ) : (
-                ""
+                state.sortingResult.length > 0 && <SortingResult />
             )}
-            {state.isSorting && <Spinner />}
         </div>
     );
 };

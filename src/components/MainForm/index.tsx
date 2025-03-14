@@ -1,4 +1,3 @@
-import { FormEvent, useCallback } from "react";
 import { toast } from "react-toastify";
 import { MAX_ARRAY_LENGTH, MAX_NUMBER, MIN_NUMBER } from "../../constants";
 import { GenerateType as GenerateTypeComponent } from "../InputType";
@@ -12,7 +11,7 @@ import { Button } from "../Button";
 import { MainFormProps } from "./MainForm.props";
 
 export const MainForm = ({ state, setState, onGenerate }: MainFormProps) => {
-    const onAddManualNumber = useCallback(() => {
+    const onAddManualNumber = () => {
         if (state.manualNumbers.length >= MAX_ARRAY_LENGTH) {
             toast.error(
                 `Досягнута максимальна кількість чисел - ${MAX_ARRAY_LENGTH}`,
@@ -25,7 +24,7 @@ export const MainForm = ({ state, setState, onGenerate }: MainFormProps) => {
             return;
         }
 
-        const parsedNumber = parseInt(state.manualNumberInput);
+        const parsedNumber = parseFloat(state.manualNumberInput);
 
         if (
             isNaN(parsedNumber) ||
@@ -40,20 +39,20 @@ export const MainForm = ({ state, setState, onGenerate }: MainFormProps) => {
 
         setState((prev) => ({
             ...prev,
-            manualNumbers: [...prev.manualNumbers, parsedNumber],
+            manualNumbers: [
+                ...prev.manualNumbers,
+                { value: parsedNumber, id: Date.now() },
+            ],
             manualNumberInput: "",
         }));
-    }, [state.manualNumberInput, state.manualNumbers, setState]);
+    };
 
-    const onRemoveManualNumber = useCallback(
-        (number: number) => {
-            setState((prev) => ({
-                ...prev,
-                manualNumbers: prev.manualNumbers.filter((n) => n !== number),
-            }));
-        },
-        [setState],
-    );
+    const onRemoveManualNumber = (numberId: number) => {
+        setState((prev) => ({
+            ...prev,
+            manualNumbers: prev.manualNumbers.filter((n) => n.id !== numberId),
+        }));
+    };
 
     return (
         <div className="m-6">

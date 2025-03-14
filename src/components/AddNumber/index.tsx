@@ -14,7 +14,7 @@ export const AddNumber = ({
                 value={manualNumberInput || ""}
                 onChange={(e) => setManualNumberInput(e.target.value)}
             />
-            <Button className="px-4" onClick={onAddManualNumber}>
+            <Button className="px-4" onClick={onAddManualNumber} type="button">
                 Додати
             </Button>
         </div>
