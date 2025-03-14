@@ -28,8 +28,9 @@ const initialState: MainFormState = {
     manualNumbers: [],
     manualNumberInput: "",
     isSorting: false,
-    sortingResult: [],
-    sortingTime: 0,
+    /*  sortingTime: 0, */
+    sortedArray: [],
+    arrayToSort: [],
 };
 
 const App = () => {
@@ -121,7 +122,7 @@ const App = () => {
             manualNumbers,
         } = state;
 
-        let arrayToSort = [];
+        let arrayToSort: number[] = [];
 
         if (generateType === "auto") {
             arrayToSort = generateArray(parseInt(arraySize), {
@@ -180,7 +181,8 @@ const App = () => {
 
         setState((prev) => ({
             ...prev,
-            sortingResult: sortedArray,
+            sortedArray,
+            arrayToSort,
             isSorting: false,
         }));
 
@@ -200,7 +202,12 @@ const App = () => {
             {state.isSorting ? (
                 <Spinner />
             ) : (
-                state.sortingResult.length > 0 && <SortingResult />
+                state.sortedArray.length > 0 && (
+                    <SortingResult
+                        arrayToSort={state.arrayToSort}
+                        sortedArray={state.sortedArray}
+                    />
+                )
             )}
         </div>
     );

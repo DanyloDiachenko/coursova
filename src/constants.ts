@@ -50,8 +50,9 @@ export interface MainFormState {
     manualNumbers: { value: number; id: number }[];
     manualNumberInput: string;
     isSorting: boolean;
-    sortingResult: number[];
-    sortingTime: number;
+    /* sortingTime: number; */
+    sortedArray: number[];
+    arrayToSort: number[];
 }
 
 export const generateArray = (

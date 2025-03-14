@@ -40,7 +40,7 @@ export const Select = ({
                 </span>
             </button>
             {isOpen && (
-                <ul className="absolute left-0 w-auto mt-1 bg-white border rounded-lg shadow-lg">
+                <ul className="absolute left-0 w-auto mt-1 bg-white border rounded-lg shadow-lg z-10">
                     {options.map((option) => (
                         <li
                             key={option.value}
