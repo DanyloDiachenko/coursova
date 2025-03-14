@@ -39,6 +39,26 @@ export const VISIBLE_ARRAY_LENGTH_OPTIONS = [
         title: "1000 видимих чисел",
         value: "1000",
     },
+    {
+        title: "2000 видимих чисел",
+        value: "2000",
+    },
+    {
+        title: "5000 видимих чисел",
+        value: "5000",
+    },
+    {
+        title: "10000 видимих чисел",
+        value: "10000",
+    },
+    {
+        title: "20000 видимих чисел",
+        value: "20000",
+    },
+    {
+        title: "50000 видимих чисел",
+        value: "50000",
+    },
 ];
 
 export interface MainFormState {

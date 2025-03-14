@@ -21,7 +21,7 @@ export const SortingResult = ({
     );
 
     return (
-        <div className="m-6 mb-80">
+        <div className="m-6 pb-80">
             <h2>Результат сортування</h2>
             <Select
                 className="mt-2"
@@ -38,9 +38,11 @@ export const SortingResult = ({
                             </th>
                             {visibleArrayToSort.map((_, index) => (
                                 <th
-                                    className="text-left p-1 border-r"
+                                    className="text-left p-1 px-2 border-r font-semibold bg-gray-50 text-sm"
                                     key={index}
-                                ></th>
+                                >
+                                    {index + 1}
+                                </th>
                             ))}
                         </tr>
                     </thead>
