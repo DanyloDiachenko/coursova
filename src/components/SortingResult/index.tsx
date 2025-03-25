@@ -6,6 +6,7 @@ import { SortingResultProps } from "./SortingResult.props";
 export const SortingResult = ({
     sortedArray,
     arrayToSort,
+    sortingTime,
 }: SortingResultProps) => {
     const [arrayLength, setArrayLength] = useState(
         VISIBLE_ARRAY_LENGTH_OPTIONS[0],
@@ -23,8 +24,13 @@ export const SortingResult = ({
     return (
         <div className="m-6 pb-80">
             <h2>Результат сортування</h2>
+            <div className="mt-2 text-gray-500">
+                <div className="">
+                    Час сортування: <b>{sortingTime.toFixed(2)}</b> мс
+                </div>
+            </div>
             <Select
-                className="mt-2"
+                className="mt-4"
                 options={VISIBLE_ARRAY_LENGTH_OPTIONS}
                 activeOption={arrayLength}
                 onChange={(option) => setArrayLength(option)}
@@ -75,6 +81,9 @@ export const SortingResult = ({
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <div className="mt-4">
+                
             </div>
         </div>
     );

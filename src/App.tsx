@@ -211,6 +211,7 @@ const App = () => {
                     <SortingResult
                         arrayToSort={state.arrayToSort}
                         sortedArray={state.sortedArray}
+                        sortingTime={state.sortingTime}
                     />
                 )
             )}
