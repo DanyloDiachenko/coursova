@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { VISIBLE_ARRAY_LENGTH_OPTIONS } from "../../constants";
+import {
+    SORTING_RESULT_FILE_NAME,
+    VISIBLE_ARRAY_LENGTH_OPTIONS,
+} from "../../constants";
 import { Select } from "../Select";
 import { SortingResultProps } from "./SortingResult.props";
+import { Link } from "react-router-dom";
 
 export const SortingResult = ({
     sortedArray,
@@ -20,6 +24,22 @@ export const SortingResult = ({
         0,
         parseInt(arrayLength.value),
     );
+
+    const onSaveResultsInFileClick = () => {
+        const blob = new Blob([sortedArray.join("\n")], {
+            type: "text/plain",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+
+        a.href = url;
+        a.download = SORTING_RESULT_FILE_NAME;
+        document.body.appendChild(a);
+        a.click();
+
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
     return (
         <div className="m-6 pb-80">
@@ -82,8 +102,14 @@ export const SortingResult = ({
                     </tbody>
                 </table>
             </div>
-            <div className="mt-4">
-                
+            <div className="mt-2">
+                <Link
+                    to="#"
+                    className="text-purple-600 hover:text-purple-800 font-medium"
+                    onClick={onSaveResultsInFileClick}
+                >
+                    Завантажити результат у файл
+                </Link>
             </div>
         </div>
     );
