@@ -28,7 +28,7 @@ const initialState: MainFormState = {
     manualNumbers: [],
     manualNumberInput: "",
     isSorting: false,
-    /*  sortingTime: 0, */
+    sortingTime: 0,
     sortedArray: [],
     arrayToSort: [],
 };
@@ -149,6 +149,8 @@ const App = () => {
         }
 
         let sortedArray: number[] = [];
+        const sortingTimeStart = performance.now();
+
         switch (sortType) {
             case "block":
                 sortedArray = blockSort(
@@ -179,11 +181,14 @@ const App = () => {
                 return;
         }
 
+        const sortingTime = performance.now() - sortingTimeStart;
+
         setState((prev) => ({
             ...prev,
             sortedArray,
             arrayToSort,
             isSorting: false,
+            sortingTime,
         }));
 
         console.log(sortedArray);

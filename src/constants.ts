@@ -70,7 +70,7 @@ export interface MainFormState {
     manualNumbers: { value: number; id: number }[];
     manualNumberInput: string;
     isSorting: boolean;
-    /* sortingTime: number; */
+    sortingTime: number;
     sortedArray: number[];
     arrayToSort: number[];
 }
