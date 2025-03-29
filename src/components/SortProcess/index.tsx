@@ -1,19 +1,29 @@
+import { useState } from "react";
+import { Button } from "../Button";
 import { SortProcessProps } from "./SortProcess.props";
 
-export const SortProcess = ({ isOpened, onCloseClick }: SortProcessProps) => {
-    return (
-        <>
-            {isOpened && (
-                <div className="fixed inset-0 z-50">
-                    <div
-                        className="bg-black bg-opacity-50 z-50 w-full h-full"
+export const SortingModal = ({ isOpened, onCloseClick }: SortProcessProps) => {
+    return true ? (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+            <div className="bg-white rounded-2xl p-6 shadow-xl w-[400px] relative">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold">Sorting Animation</h2>
+                    <button
                         onClick={onCloseClick}
-                    ></div>
-                    <div className="bg-white max-w-md mx-auto">
-                        <div>Sort Process</div>
-                    </div>
+                        className="text-gray-500 hover:text-gray-700"
+                    >
+                        x
+                    </button>
                 </div>
-            )}
-        </>
+                <div className="h-40 flex items-center justify-center border border-dashed rounded-lg">
+                    <p className="text-gray-400">Тут будет анимация</p>
+                </div>
+                <div className="mt-6 flex justify-end">
+                    <Button onClick={onCloseClick}>Skip</Button>
+                </div>
+            </div>
+        </div>
+    ) : (
+        <></>
     );
 };
