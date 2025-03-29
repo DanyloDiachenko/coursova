@@ -73,6 +73,8 @@ export interface MainFormState {
     sortingTime: number;
     sortedArray: number[];
     arrayToSort: number[];
+    visibleArrayToSort: number[];
+    visibleSortedArray: number[];
 }
 
 export const generateArray = (

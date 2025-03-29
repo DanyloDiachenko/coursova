@@ -6,24 +6,21 @@ import {
 import { Select } from "../Select";
 import { SortingResultProps } from "./SortingResult.props";
 import { Link } from "react-router-dom";
+import { Option } from "../Select/Select.props";
 
 export const SortingResult = ({
     sortedArray,
-    arrayToSort,
     sortingTime,
+    visibleArrayToSort,
+    visibleSortedArray,
 }: SortingResultProps) => {
     const [arrayLength, setArrayLength] = useState(
         VISIBLE_ARRAY_LENGTH_OPTIONS[0],
     );
 
-    const visibleArrayToSort = arrayToSort.slice(
-        0,
-        parseInt(arrayLength.value),
-    );
-    const visibleSortedArray = sortedArray.slice(
-        0,
-        parseInt(arrayLength.value),
-    );
+    const onVisibleArrayLengthChange = (option: Option) => {
+        setArrayLength(option);
+    };
 
     const onSaveResultsInFileClick = () => {
         const blob = new Blob([sortedArray.join("\n")], {

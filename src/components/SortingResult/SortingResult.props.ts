@@ -1,5 +1,6 @@
 export interface SortingResultProps {
-    arrayToSort: number[];
     sortedArray: number[];
     sortingTime: number;
+    visibleArrayToSort: number[];
+    visibleSortedArray: number[];
 }

@@ -31,6 +31,8 @@ const initialState: MainFormState = {
     sortingTime: 0,
     sortedArray: [],
     arrayToSort: [],
+    visibleArrayToSort: [],
+    visibleSortedArray: [],
 };
 
 const App = () => {
@@ -209,9 +211,10 @@ const App = () => {
             ) : (
                 state.sortedArray.length > 0 && (
                     <SortingResult
-                        arrayToSort={state.arrayToSort}
                         sortedArray={state.sortedArray}
                         sortingTime={state.sortingTime}
+                        visibleArrayToSort={state.visibleArrayToSort}
+                        visibleSortedArray={state.visibleSortedArray}
                     />
                 )
             )}
