@@ -18,6 +18,7 @@ import {
 } from "./constants";
 import { toast } from "react-toastify";
 import { Spinner } from "./components/Spinner";
+import { SortProcess } from "./components/SortProcess";
 
 const initialState: MainFormState = {
     generateType: null,
@@ -195,27 +196,30 @@ const App = () => {
     };
 
     return (
-        <div>
-            <HelloMessage />
-            <Divider />
-            <MainForm
-                state={state}
-                setState={setState}
-                onGenerate={onGenerate}
-            />
-            <Divider />
-            {state.isSorting ? (
-                <Spinner />
-            ) : (
-                state.sortedArray.length > 0 && (
-                    <SortResult
-                        arrayToSort={state.arrayToSort}
-                        sortedArray={state.sortedArray}
-                        sortingTime={state.sortingTime}
-                    />
-                )
-            )}
-        </div>
+        <>
+            <SortProcess isOpened={true} onCloseClick={() => {}} />
+            <div>
+                <HelloMessage />
+                <Divider />
+                <MainForm
+                    state={state}
+                    setState={setState}
+                    onGenerate={onGenerate}
+                />
+                <Divider />
+                {state.isSorting ? (
+                    <Spinner />
+                ) : (
+                    state.sortedArray.length > 0 && (
+                        <SortResult
+                            arrayToSort={state.arrayToSort}
+                            sortedArray={state.sortedArray}
+                            sortingTime={state.sortingTime}
+                        />
+                    )
+                )}
+            </div>
+        </>
     );
 };
 
