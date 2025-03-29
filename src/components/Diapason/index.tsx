@@ -5,7 +5,7 @@ export const Diapason = ({ diapason, setDiapason }: DiapasonProps) => {
     return (
         <label className="mt-4 block">
             <h2>Введіть діапазон можливих значень</h2>
-            <div className="flex gap-4 mt-2">
+            <div className="flex gap-4 mt-2 flex-wrap">
                 <Input
                     placeholder="Від..."
                     value={diapason?.from}

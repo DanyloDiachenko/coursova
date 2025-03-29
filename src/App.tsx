@@ -2,7 +2,7 @@ import { FormEvent, useState } from "react";
 import { HelloMessage } from "./components/HelloMessage";
 import { Divider } from "./components/Divider";
 import { MainForm } from "./components/MainForm";
-import { SortingResult } from "./components/SortingResult";
+import { SortResult } from "./components/SortResult";
 import {
     blockSort,
     countingSort,
@@ -208,7 +208,7 @@ const App = () => {
                 <Spinner />
             ) : (
                 state.sortedArray.length > 0 && (
-                    <SortingResult
+                    <SortResult
                         arrayToSort={state.arrayToSort}
                         sortedArray={state.sortedArray}
                         sortingTime={state.sortingTime}

@@ -4,14 +4,14 @@ import {
     VISIBLE_ARRAY_LENGTH_OPTIONS,
 } from "../../constants";
 import { Select } from "../Select";
-import { SortingResultProps } from "./SortingResult.props";
+import { SortResultProps } from "./SortResult.props";
 import { Link } from "react-router-dom";
 
-export const SortingResult = ({
+export const SortResult = ({
     sortedArray,
     arrayToSort,
     sortingTime,
-}: SortingResultProps) => {
+}: SortResultProps) => {
     const [arrayLength, setArrayLength] = useState(
         VISIBLE_ARRAY_LENGTH_OPTIONS[0],
     );

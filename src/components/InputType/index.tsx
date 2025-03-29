@@ -8,7 +8,7 @@ export const GenerateType = ({
     return (
         <div>
             <h2>Оберіть тип вводу</h2>
-            <div className="flex gap-4 mt-2">
+            <div className="flex gap-4 mt-2 flex-wrap">
                 <Radio
                     label="Згенерувати автоматично"
                     name="generate-type"

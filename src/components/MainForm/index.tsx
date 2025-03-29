@@ -66,7 +66,6 @@ export const MainForm = ({ state, setState, onGenerate }: MainFormProps) => {
                         setState((prev) => ({ ...prev, generateType: value }))
                     }
                 />
-
                 {state.generateType && (
                     <>
                         {state.generateType === "auto" ? (
