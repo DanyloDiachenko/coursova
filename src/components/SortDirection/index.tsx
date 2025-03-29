@@ -8,7 +8,7 @@ export const SortDirection = ({
     return (
         <div className="mt-4">
             <h2>Оберіть напрям сортування</h2>
-            <div className="flex gap-4 mt-2">
+            <div className="flex gap-4 mt-2 flex-wrap">
                 <Radio
                     label="За зростанням"
                     value="asc"

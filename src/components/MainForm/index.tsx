@@ -55,10 +55,10 @@ export const MainForm = ({ state, setState, onGenerate }: MainFormProps) => {
     };
 
     return (
-        <div className="m-6">
+        <div className="m-3 sm:m-6">
             <form
                 onSubmit={onGenerate}
-                className="bg-white border-2 border-gray-200 rounded-lg p-5 inline-block"
+                className="bg-white border-2 border-gray-200 rounded-lg p-3 sm:p-5 inline-block"
             >
                 <GenerateTypeComponent
                     generateType={state.generateType}

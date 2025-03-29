@@ -26,7 +26,7 @@ export const Radio = ({
                     }`}
                 ></div>
             </div>
-            <span className="text-lg text-black">{label}</span>
+            <span className="text-base sm:text-lg text-black">{label}</span>
             <input
                 type="radio"
                 id={id}

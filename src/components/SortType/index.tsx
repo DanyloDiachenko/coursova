@@ -5,7 +5,7 @@ export const SortType = ({ sortType, setSortType }: SortTypeProps) => {
     return (
         <div className="mt-4">
             <h2>Оберіть тип сортування</h2>
-            <div className="flex gap-4 mt-2">
+            <div className="flex gap-4 mt-2 flex-wrap">
                 <Radio
                     label="Блочне сортування"
                     value="block"
