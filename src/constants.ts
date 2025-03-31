@@ -73,6 +73,7 @@ export interface MainFormState {
     sortingTime: number;
     sortedArray: number[];
     arrayToSort: number[];
+    steps: number[][];
 }
 
 export const generateArray = (
@@ -265,3 +266,213 @@ export const flashSort = (arr: number[], direction: SortDirection) => {
 
     return direction === "desc" ? arr.reverse() : arr;
 };
+
+export function* blockSortGenerator(array: number[], direction: SortDirection) {
+    const arr = [...array]; // Робимо копію масиву
+    const blockSize = Math.max(1, Math.floor(Math.sqrt(arr.length)));
+    let blocks: number[][] = [];
+
+    // Розділення на блоки та сортування
+    for (let i = 0; i < arr.length; i += blockSize) {
+        let block = arr.slice(i, i + blockSize).sort((a, b) => a - b);
+        blocks.push(block);
+        arr.splice(i, blockSize, ...block);
+        yield [...arr]; // Проміжний стан після сортування блоку
+    }
+
+    let minHeap: { value: number; blockIdx: number; elemIdx: number }[] = [];
+    let sortedArray: number[] = [];
+
+    // Ініціалізація minHeap
+    for (let i = 0; i < blocks.length; i++) {
+        if (blocks[i].length > 0) {
+            minHeap.push({ value: blocks[i][0], blockIdx: i, elemIdx: 0 });
+        }
+    }
+    minHeap.sort((a, b) => a.value - b.value);
+    yield [...arr]; // Проміжний стан після ініціалізації minHeap
+
+    // Об'єднання блоків
+    while (minHeap.length > 0) {
+        let { value, blockIdx, elemIdx } = minHeap.shift()!;
+        sortedArray.push(value);
+        arr[sortedArray.length - 1] = value; // Оновлюємо масив
+        yield [...arr]; // Проміжний стан після додавання елемента
+
+        if (elemIdx + 1 < blocks[blockIdx].length) {
+            minHeap.push({
+                value: blocks[blockIdx][elemIdx + 1],
+                blockIdx,
+                elemIdx: elemIdx + 1,
+            });
+            minHeap.sort((a, b) => a.value - b.value);
+            yield [...arr]; // Проміжний стан після оновлення minHeap
+        }
+    }
+
+    const finalArray =
+        direction === "desc" ? sortedArray.reverse() : sortedArray;
+    yield [...finalArray]; // Фінальний стан
+    return finalArray;
+}
+
+export function* countingSortGenerator(
+    array: number[],
+    direction: SortDirection,
+) {
+    const arr = [...array]; // Робимо копію масиву
+    const N = arr.length;
+    let M = Math.max(...arr);
+    const countArray = new Array(M + 1).fill(0);
+
+    // Підрахунок елементів
+    for (let i = 0; i < N; i++) {
+        countArray[arr[i]]++;
+        yield [...arr]; // Проміжний стан після підрахунку
+    }
+
+    // Кумулятивний підрахунок
+    for (let i = 1; i <= M; i++) {
+        countArray[i] += countArray[i - 1];
+        yield [...arr]; // Проміжний стан після кумулятивного підрахунку
+    }
+
+    const outputArray = new Array(N);
+    for (let i = N - 1; i >= 0; i--) {
+        outputArray[countArray[arr[i]] - 1] = arr[i];
+        countArray[arr[i]]--;
+        arr[i] = outputArray[i] || arr[i]; // Оновлюємо масив
+        yield [...arr]; // Проміжний стан після розміщення елемента
+    }
+
+    const finalArray =
+        direction === "desc" ? outputArray.reverse() : outputArray;
+    yield [...finalArray]; // Фінальний стан
+    return finalArray;
+}
+
+function* countSortHelperGenerator(arr: number[], exp: number) {
+    const length = arr.length;
+    let output = Array(length).fill(0);
+    let count = Array(10).fill(0);
+
+    // Підрахунок цифр
+    for (let i = 0; i < length; i++) {
+        const digit = Math.floor(arr[i] / exp) % 10;
+        count[digit]++;
+        yield [...arr]; // Проміжний стан після підрахунку
+    }
+
+    // Кумулятивний підрахунок
+    for (let i = 1; i < 10; i++) {
+        count[i] += count[i - 1];
+        yield [...arr]; // Проміжний стан після кумулятивного підрахунку
+    }
+
+    // Розміщення елементів
+    for (let i = length - 1; i >= 0; i--) {
+        const digit = Math.floor(arr[i] / exp) % 10;
+        output[count[digit] - 1] = arr[i];
+        count[digit]--;
+        arr[i] = output[i] || arr[i]; // Оновлюємо масив
+        yield [...arr]; // Проміжний стан після розміщення
+    }
+
+    return output;
+}
+
+export function* radixSortGenerator(arr: number[], direction: SortDirection) {
+    const sortedArr = [...arr]; // Робимо копію масиву
+    const maxNumber = Math.max(...sortedArr);
+
+    for (let exp = 1; Math.floor(maxNumber / exp) > 0; exp *= 10) {
+        const sortedIteration = yield* countSortHelperGenerator(sortedArr, exp);
+        sortedArr.splice(0, sortedArr.length, ...sortedIteration);
+        yield [...sortedArr]; // Проміжний стан після кожного розряду
+    }
+
+    const finalArray = direction === "desc" ? sortedArr.reverse() : sortedArr;
+    yield [...finalArray]; // Фінальний стан
+    return finalArray;
+}
+
+export function* flashSortGenerator(arr: number[], direction: SortDirection) {
+    const array = [...arr]; // Робимо копію масиву
+    let max = 0;
+    let min = array[0];
+    const n = array.length;
+    const m = ~~(0.45 * n);
+    const l = new Array(m).fill(0);
+
+    // Визначення min і max
+    for (let i = 1; i < n; ++i) {
+        if (array[i] < min) min = array[i];
+        if (array[i] > array[max]) max = i;
+    }
+    yield [...array]; // Проміжний стан після визначення min/max
+
+    if (min === array[max]) return array;
+
+    const c1 = (m - 1) / (array[max] - min);
+
+    // Підрахунок класів
+    for (let j = 0; j < n; ++j) {
+        const k = ~~(c1 * (array[j] - min));
+        ++l[k];
+        yield [...array]; // Проміжний стан після підрахунку
+    }
+
+    // Кумулятивний підрахунок
+    for (let p = 1; p < m; ++p) {
+        l[p] += l[p - 1];
+        yield [...array]; // Проміжний стан після кумулятивного підрахунку
+    }
+
+    // Початковий обмін
+    let hold = array[max];
+    array[max] = array[0];
+    array[0] = hold;
+    yield [...array]; // Проміжний стан після обміну
+
+    // Основний цикл переміщення
+    let move = 0,
+        t: number,
+        flash: number;
+    let j = 0;
+    let k = m - 1;
+
+    while (move < n - 1) {
+        while (j > l[k] - 1) {
+            ++j;
+            k = ~~(c1 * (array[j] - min));
+        }
+        if (k < 0) break;
+        flash = array[j];
+        while (j !== l[k]) {
+            k = ~~(c1 * (flash - min));
+            t = --l[k];
+            hold = array[t];
+            array[t] = flash;
+            flash = hold;
+            ++move;
+            yield [...array]; // Проміжний стан після кожного обміну
+        }
+    }
+
+    // Вставкове сортування
+    for (j = 1; j < n; j++) {
+        hold = array[j];
+        let i = j - 1;
+        while (i >= 0 && array[i] > hold) {
+            array[i + 1] = array[i];
+            i--;
+            yield [...array]; // Проміжний стан під час вставки
+        }
+        array[i + 1] = hold;
+        yield [...array]; // Проміжний стан після вставки
+    }
+
+    const finalArray = direction === "desc" ? array.reverse() : array;
+    yield [...finalArray]; // Фінальний стан
+    return finalArray;
+}

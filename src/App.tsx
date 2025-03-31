@@ -1,19 +1,20 @@
+// App.tsx
 import { FormEvent, useState } from "react";
 import { HelloMessage } from "./components/HelloMessage";
 import { Divider } from "./components/Divider";
 import { MainForm } from "./components/MainForm";
 import { SortResult } from "./components/SortResult";
 import {
-    blockSort,
-    countingSort,
-    flashSort,
+    blockSortGenerator,
+    countingSortGenerator,
+    flashSortGenerator,
     generateArray,
     MainFormState,
     MAX_ARRAY_LENGTH,
     MAX_NUMBER,
     MIN_ARRAY_LENGTH,
     MIN_NUMBER,
-    radixSort,
+    radixSortGenerator,
     SortDirection,
 } from "./constants";
 import { toast } from "react-toastify";
@@ -32,6 +33,7 @@ const initialState: MainFormState = {
     sortingTime: 0,
     sortedArray: [],
     arrayToSort: [],
+    steps: [],
 };
 
 const App = () => {
@@ -65,13 +67,11 @@ const App = () => {
             toast.error("Діапазон 'від' має бути меншим за 'до'");
             return false;
         }
-
         return true;
     };
 
     const validateArraySize = (size: string) => {
         const parsedSize = parseInt(size);
-
         if (
             !size.trim().length ||
             isNaN(parsedSize) ||
@@ -91,14 +91,12 @@ const App = () => {
             toast.error("Не вказано тип або напрямок сортування");
             return false;
         }
-
         if (state.generateType === "auto") {
             return (
                 validateRange(state.diapason.from, state.diapason.to) &&
                 validateArraySize(state.arraySize)
             );
         }
-
         if (
             state.generateType === "manual" &&
             state.manualNumbers.length < MIN_ARRAY_LENGTH
@@ -106,7 +104,6 @@ const App = () => {
             toast.error(`Необхідно ввести мінімум ${MIN_ARRAY_LENGTH} чисел`);
             return false;
         }
-
         return true;
     };
 
@@ -124,7 +121,6 @@ const App = () => {
         } = state;
 
         let arrayToSort: number[] = [];
-
         if (generateType === "auto") {
             arrayToSort = generateArray(parseInt(arraySize), {
                 from: parseFloat(diapason.from),
@@ -149,32 +145,52 @@ const App = () => {
             }
         }
 
-        let sortedArray: number[] = [];
         const sortingTimeStart = performance.now();
+        let steps: number[][] = [arrayToSort]; // Початковий стан
+        let sortedArray: number[] = [];
+
+        const collectSteps = (
+            generator: Generator<number[], number[], undefined>,
+        ) => {
+            let result = generator.next();
+            while (!result.done) {
+                steps.push([...result.value]); // Збираємо кожен проміжний стан
+                result = generator.next();
+            }
+            sortedArray = result.value;
+        };
 
         switch (sortType) {
             case "block":
-                sortedArray = blockSort(
-                    arrayToSort,
-                    sortDirection as SortDirection,
+                collectSteps(
+                    blockSortGenerator(
+                        arrayToSort,
+                        sortDirection as SortDirection,
+                    ),
                 );
                 break;
             case "counting":
-                sortedArray = countingSort(
-                    arrayToSort,
-                    sortDirection as SortDirection,
+                collectSteps(
+                    countingSortGenerator(
+                        arrayToSort,
+                        sortDirection as SortDirection,
+                    ),
                 );
                 break;
             case "radix":
-                sortedArray = radixSort(
-                    arrayToSort,
-                    sortDirection as SortDirection,
+                collectSteps(
+                    radixSortGenerator(
+                        arrayToSort,
+                        sortDirection as SortDirection,
+                    ),
                 );
                 break;
             case "flash":
-                sortedArray = flashSort(
-                    arrayToSort,
-                    sortDirection as SortDirection,
+                collectSteps(
+                    flashSortGenerator(
+                        arrayToSort,
+                        sortDirection as SortDirection,
+                    ),
                 );
                 break;
             default:
@@ -190,14 +206,19 @@ const App = () => {
             arrayToSort,
             isSorting: false,
             sortingTime,
+            steps,
         }));
-
-        console.log(sortedArray);
     };
 
     return (
         <>
-            <SortProcess isOpened={true} onCloseClick={() => {}} />
+            <SortProcess
+                isOpened={state.steps.length > 0}
+                onCloseClick={() =>
+                    setState((prev) => ({ ...prev, steps: [] }))
+                }
+                steps={state.steps}
+            />
             <div>
                 <HelloMessage />
                 <Divider />
