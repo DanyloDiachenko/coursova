@@ -56,8 +56,8 @@ export const SortProcess = ({
                         x
                     </button>
                 </div>
-                <div className="flex items-end justify-center border border-dashed rounded-lg overflow-auto h-64">
-                    <div className="flex gap-1">
+                <div className="flex items-end justify-center border border-dashed rounded-lg overflow-h-auto min-h-64">
+                    <div className="flex gap-1 items-end">
                         <AnimatePresence>
                             {visibleSteps[currentStep]?.map((num, index) => {
                                 const initialIndex = initialStep.indexOf(num);
@@ -69,9 +69,9 @@ export const SortProcess = ({
                                     <motion.div
                                         key={key}
                                         layout
-                                        className="bg-blue-500 rounded-t"
+                                        className="bg-blue-500 rounded-t text-sm text-white flex items-end justify-center"
                                         style={{
-                                            width: "20px",
+                                            width: "35px",
                                             height: `${getBarHeight(
                                                 num,
                                                 minValue,
@@ -82,7 +82,9 @@ export const SortProcess = ({
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: 20 }}
                                         transition={{ duration: 0.3 }}
-                                    />
+                                    >
+                                        {num}
+                                    </motion.div>
                                 );
                             })}
                         </AnimatePresence>
