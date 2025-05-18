@@ -46,7 +46,7 @@ export const SortResult = ({
             <h2>Результат сортування</h2>
             <div className="mt-2 text-gray-500">
                 <div className="">
-                    Час сортування: <b>{sortingTime.toFixed(2)}</b> мс
+                    Час сортування: <b>{sortingTime}</b> мс
                 </div>
             </div>
             <Select

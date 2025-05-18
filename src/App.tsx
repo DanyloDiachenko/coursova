@@ -5,8 +5,11 @@ import { Divider } from "./components/Divider";
 import { MainForm } from "./components/MainForm";
 import { SortResult } from "./components/SortResult";
 import {
+    blockSort,
     blockSortGenerator,
+    countingSort,
     countingSortGenerator,
+    flashSort,
     flashSortGenerator,
     generateArray,
     MainFormState,
@@ -14,6 +17,7 @@ import {
     MAX_NUMBER,
     MIN_ARRAY_LENGTH,
     MIN_NUMBER,
+    radixSort,
     radixSortGenerator,
     SortDirection,
 } from "./constants";
@@ -146,10 +150,10 @@ const App = () => {
         }
 
         const sortingTimeStart = performance.now();
-        let steps: number[][] = [arrayToSort]; // Початковий стан
+        /* let steps: number[][] = [arrayToSort]; // Початковий стан */
         let sortedArray: number[] = [];
 
-        const collectSteps = (
+        /* const collectSteps = (
             generator: Generator<number[], number[], undefined>,
         ) => {
             let result = generator.next();
@@ -158,41 +162,37 @@ const App = () => {
                 result = generator.next();
             }
             sortedArray = result.value;
-        };
+        }; */
 
         switch (sortType) {
-            case "block":
-                collectSteps(
-                    blockSortGenerator(
-                        arrayToSort,
-                        sortDirection as SortDirection,
-                    ),
+            case "block": {
+                sortedArray = blockSort(
+                    arrayToSort,
+                    sortDirection as SortDirection,
                 );
                 break;
-            case "counting":
-                collectSteps(
-                    countingSortGenerator(
-                        arrayToSort,
-                        sortDirection as SortDirection,
-                    ),
+            }
+            case "counting": {
+                sortedArray = countingSort(
+                    arrayToSort,
+                    sortDirection as SortDirection,
                 );
                 break;
-            case "radix":
-                collectSteps(
-                    radixSortGenerator(
-                        arrayToSort,
-                        sortDirection as SortDirection,
-                    ),
+            }
+            case "radix": {
+                sortedArray = radixSort(
+                    arrayToSort,
+                    sortDirection as SortDirection,
                 );
                 break;
-            case "flash":
-                collectSteps(
-                    flashSortGenerator(
-                        arrayToSort,
-                        sortDirection as SortDirection,
-                    ),
+            }
+            case "flash": {
+                sortedArray = flashSort(
+                    arrayToSort,
+                    sortDirection as SortDirection,
                 );
                 break;
+            }
             default:
                 toast.error("Невалідний тип сортування");
                 return;
@@ -206,19 +206,19 @@ const App = () => {
             arrayToSort,
             isSorting: false,
             sortingTime,
-            steps,
+            /*  steps, */
         }));
     };
 
     return (
         <>
-            <SortProcess
+            {/* <SortProcess
                 isOpened={state.steps.length > 0}
                 onCloseClick={() =>
                     setState((prev) => ({ ...prev, steps: [] }))
                 }
                 steps={state.steps}
-            />
+            /> */}
             <div>
                 <HelloMessage />
                 <Divider />
