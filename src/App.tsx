@@ -211,13 +211,13 @@ const App = () => {
 
     return (
         <>
-            {/* <SortProcess
+            <SortProcess
                 isOpened={state.steps.length > 0}
                 onCloseClick={() =>
                     setState((prev) => ({ ...prev, steps: [] }))
                 }
                 steps={state.steps}
-            /> */}
+            />
             <div>
                 <HelloMessage />
                 <Divider />
