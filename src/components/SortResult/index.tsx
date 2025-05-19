@@ -11,6 +11,7 @@ export const SortResult = ({
     sortedArray,
     arrayToSort,
     sortingTime,
+    complexity,
 }: SortResultProps) => {
     const [arrayLength, setArrayLength] = useState(
         VISIBLE_ARRAY_LENGTH_OPTIONS[0],
@@ -47,6 +48,9 @@ export const SortResult = ({
             <div className="mt-2 text-gray-500">
                 <div className="">
                     Час сортування: <b>{sortingTime}</b> мс
+                </div>
+                <div className="">
+                    Складність алгоритму: <b>{complexity}</b>
                 </div>
             </div>
             <Select

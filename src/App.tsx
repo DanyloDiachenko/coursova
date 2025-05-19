@@ -16,6 +16,7 @@ import {
     MIN_NUMBER,
     radixSort,
     SortDirection,
+    SORTING_ALGORITHMS_WITH_COMPLEXITY,
 } from "./constants";
 import { toast } from "react-toastify";
 import { Spinner } from "./components/Spinner";
@@ -34,6 +35,7 @@ const initialState: MainFormState = {
     sortedArray: [],
     arrayToSort: [],
     steps: [],
+    complexity: "",
 };
 
 const App = () => {
@@ -202,6 +204,7 @@ const App = () => {
             arrayToSort,
             isSorting: false,
             sortingTime,
+            complexity: SORTING_ALGORITHMS_WITH_COMPLEXITY[sortType],
             /*  steps, */
         }));
     };
@@ -232,6 +235,7 @@ const App = () => {
                             arrayToSort={state.arrayToSort}
                             sortedArray={state.sortedArray}
                             sortingTime={state.sortingTime}
+                            complexity={state.complexity}
                         />
                     )
                 )}

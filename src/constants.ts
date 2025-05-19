@@ -10,6 +10,13 @@ export type GenerateType = "auto" | "manual";
 export type SortDirection = "asc" | "desc";
 export type SortType = "block" | "counting" | "radix" | "flash";
 
+export const SORTING_ALGORITHMS_WITH_COMPLEXITY = {
+    block: "O(n * log(n))",
+    counting: "O(n + k)",
+    radix: "O(n * k)",
+    flash: "O(n + k)",
+};
+
 export const VISIBLE_ARRAY_LENGTH_OPTIONS = [
     {
         title: "10 видимих чисел",
@@ -74,6 +81,7 @@ export interface MainFormState {
     sortedArray: number[];
     arrayToSort: number[];
     steps: number[][];
+    complexity: string;
 }
 
 export const generateArray = (
