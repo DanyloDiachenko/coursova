@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../Button";
 import { SortProcessProps } from "./SortProcess.props";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 export const SortProcess = ({
     isOpened,
@@ -10,7 +10,9 @@ export const SortProcess = ({
 }: SortProcessProps) => {
     const [currentStep, setCurrentStep] = useState(0);
 
-    const visibleSteps = steps ? steps.map((step) => step.slice(0, 20)) : [];
+    const visibleSteps = useMemo(() => {
+        return steps ? steps.map((step) => step.slice(0, 20)) : [];
+    }, [steps]);
 
     useEffect(() => {
         if (isOpened && visibleSteps.length > 0) {

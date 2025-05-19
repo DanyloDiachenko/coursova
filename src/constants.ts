@@ -131,9 +131,6 @@ export function* blockSort(
         blocks.push(block);
     }
 
-    let combinedBlocksArray: number[][] = ([] as number[][]).concat(...blocks);
-    const remainingElements = array.slice(combinedBlocksArray.length);
-
     let tempStateArray = [...array];
     let currentIdx = 0;
     for (const block of blocks) {
