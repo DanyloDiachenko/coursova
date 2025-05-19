@@ -1,4 +1,3 @@
-// App.tsx
 import { FormEvent, useState } from "react";
 import { HelloMessage } from "./components/HelloMessage";
 import { Divider } from "./components/Divider";
@@ -94,15 +93,16 @@ const validateForm = (state: MainFormState): boolean => {
             validateRange(state.diapason.from, state.diapason.to) &&
             validateArraySize(state.arraySize)
         );
-    }
-    if (
-        state.generateType === "manual" &&
-        state.manualNumbers.length < MIN_ARRAY_LENGTH
-    ) {
-        toast.error(`Необхідно ввести мінімум ${MIN_ARRAY_LENGTH} чисел`);
+    } else if (state.generateType === "manual") {
+        if (state.manualNumbers.length < MIN_ARRAY_LENGTH) {
+            toast.error(`Необхідно ввести мінімум ${MIN_ARRAY_LENGTH} чисел`);
+            return false;
+        }
+        return true;
+    } else {
+        toast.error("Не обрано спосіб генерації масиву");
         return false;
     }
-    return true;
 };
 
 const App = () => {
@@ -110,8 +110,6 @@ const App = () => {
 
     const onGenerate = (e: FormEvent) => {
         e.preventDefault();
-        if (!validateForm(state)) return;
-
         const {
             generateType,
             sortDirection,
@@ -121,97 +119,135 @@ const App = () => {
             manualNumbers,
         } = state;
 
-        let arrayToSort: number[] = [];
-        if (generateType === "auto") {
-            arrayToSort = generateArray(parseInt(arraySize), {
-                from: parseFloat(diapason.from),
-                to: parseFloat(diapason.to),
-            });
-        } else {
-            arrayToSort = manualNumbers.map((item) => item.value);
-        }
-
-        if (sortType === "counting" || sortType === "radix") {
-            if (Math.min(...arrayToSort) < 0) {
-                toast.error(
-                    "Сортування підрахунком та порозрядне сортування не підтримує від'ємні числа",
-                );
-                return;
-            }
-            if (!arrayToSort.every(Number.isInteger)) {
-                toast.error(
-                    "Сортування підрахунком та порозрядне сортування підтримує тільки цілі числа",
-                );
-                return;
-            }
-        }
-
-        const sortingTimeStart = performance.now();
-        let steps: number[][] = [];
-        let sortedArray: number[] = [];
-        const newSortSessionId = Date.now().toString();
-
-        const collectSteps = (
-            generator: Generator<number[], number[], unknown>,
-        ) => {
-            let result = generator.next();
-            while (!result.done) {
-                steps.push([...result.value]);
-                result = generator.next(result.value);
-            }
-            sortedArray = result.value as number[];
+        const currentFormStateForValidation: MainFormState = {
+            ...initialState,
+            generateType,
+            sortDirection,
+            sortType,
+            diapason,
+            arraySize,
+            manualNumbers,
         };
 
-        switch (sortType) {
-            case "block": {
-                const generator = blockSort(
-                    [...arrayToSort],
-                    sortDirection as SortDirection,
-                );
-                collectSteps(generator);
-                break;
-            }
-            case "counting": {
-                const generator = countingSort(
-                    [...arrayToSort],
-                    sortDirection as SortDirection,
-                );
-                collectSteps(generator);
-                break;
-            }
-            case "radix": {
-                const generator = radixSort(
-                    [...arrayToSort],
-                    sortDirection as SortDirection,
-                );
-                collectSteps(generator);
-                break;
-            }
-            case "flash": {
-                const generator = flashSort(
-                    [...arrayToSort],
-                    sortDirection as SortDirection,
-                );
-                collectSteps(generator);
-                break;
-            }
-            default:
-                toast.error("Невалідний тип сортування");
-                return;
-        }
-
-        const sortingTime = performance.now() - sortingTimeStart;
+        if (!validateForm(currentFormStateForValidation)) return;
 
         setState((prev) => ({
             ...prev,
-            sortedArray,
-            arrayToSort,
-            isSorting: false,
-            sortingTime,
-            complexity: SORTING_ALGORITHMS_WITH_COMPLEXITY[sortType!],
-            steps,
-            sortSessionId: newSortSessionId,
+            isSorting: true,
+            sortedArray: [],
+            steps: [],
+            sortingTime: 0,
+            complexity: "",
         }));
+
+        let arrayToSortLocal: number[] = [];
+        if (generateType === "auto") {
+            arrayToSortLocal = generateArray(parseInt(arraySize), {
+                from: parseFloat(diapason.from),
+                to: parseFloat(diapason.to),
+            });
+        } else if (generateType === "manual") {
+            arrayToSortLocal = manualNumbers.map((item) => item.value);
+        } else {
+            toast.error("Невірний тип генерації масиву");
+            setState((prev) => ({ ...prev, isSorting: false }));
+            return;
+        }
+
+        if (sortType === "counting" || sortType === "radix") {
+            if (Math.min(...arrayToSortLocal) < 0) {
+                toast.error(
+                    "Сортування підрахунком та порозрядне сортування не підтримує від'ємні числа",
+                );
+                setState((prev) => ({ ...prev, isSorting: false }));
+                return;
+            }
+            if (!arrayToSortLocal.every(Number.isInteger)) {
+                toast.error(
+                    "Сортування підрахунком та порозрядне сортування підтримує тільки цілі числа",
+                );
+                setState((prev) => ({ ...prev, isSorting: false }));
+                return;
+            }
+        }
+
+        setTimeout(() => {
+            const sortingTimeStart = performance.now();
+            const newSortSessionId = Date.now().toString();
+            const shouldShowAnimation = arrayToSortLocal.length <= 20;
+            if (!shouldShowAnimation) {
+                toast.warning(
+                    "Анімація сортування не відображатиметься для масивів більших за 20 елементів",
+                );
+            }
+            let collectedStepsForAnimation: number[][] = [];
+            let finalSortedArray: number[] = [];
+
+            const processSortGenerator = (
+                generator: Generator<number[], number[], unknown>,
+            ) => {
+                let result = generator.next();
+                while (!result.done) {
+                    if (shouldShowAnimation) {
+                        collectedStepsForAnimation.push([...result.value]);
+                    }
+                    result = generator.next(result.value);
+                }
+                finalSortedArray = result.value as number[];
+            };
+
+            switch (sortType) {
+                case "block": {
+                    const generator = blockSort(
+                        [...arrayToSortLocal],
+                        sortDirection as SortDirection,
+                    );
+                    processSortGenerator(generator);
+                    break;
+                }
+                case "counting": {
+                    const generator = countingSort(
+                        [...arrayToSortLocal],
+                        sortDirection as SortDirection,
+                    );
+                    processSortGenerator(generator);
+                    break;
+                }
+                case "radix": {
+                    const generator = radixSort(
+                        [...arrayToSortLocal],
+                        sortDirection as SortDirection,
+                    );
+                    processSortGenerator(generator);
+                    break;
+                }
+                case "flash": {
+                    const generator = flashSort(
+                        [...arrayToSortLocal],
+                        sortDirection as SortDirection,
+                    );
+                    processSortGenerator(generator);
+                    break;
+                }
+                default:
+                    toast.error("Невалідний тип сортування під час виконання");
+                    setState((prev) => ({ ...prev, isSorting: false }));
+                    return;
+            }
+
+            const sortingTime = performance.now() - sortingTimeStart;
+
+            setState((prev) => ({
+                ...prev,
+                arrayToSort: arrayToSortLocal,
+                sortedArray: finalSortedArray,
+                isSorting: false,
+                sortingTime,
+                complexity: SORTING_ALGORITHMS_WITH_COMPLEXITY[sortType!],
+                steps: collectedStepsForAnimation,
+                sortSessionId: newSortSessionId,
+            }));
+        }, 0);
     };
 
     return (
