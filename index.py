@@ -1,108 +1,137 @@
 import time
 import random
 import math
+import heapq
 import matplotlib.pyplot as plt
 
 def block_sort(arr):
     n = len(arr)
-    block_size = int(math.sqrt(n))
-    blocks = [arr[i:i + block_size] for i in range(0, n, block_size)]
+    b = int(math.sqrt(n)) or 1
+    blocks = [arr[i:i+b] for i in range(0, n, b)]
     for block in blocks:
-        block.sort()
-    result = []
-    for block in blocks:
-        result.extend(block)
-    result.sort()
-    return result
+        for i in range(1, len(block)):
+            key = block[i]
+            j = i-1
+            while j >= 0 and block[j] > key:
+                block[j+1] = block[j]
+                j -= 1
+            block[j+1] = key
+    heap = []
+    for bi, block in enumerate(blocks):
+        if block:
+            heapq.heappush(heap, (block[0], bi, 0))
+    res = []
+    while heap:
+        val, bi, idx = heapq.heappop(heap)
+        res.append(val)
+        if idx+1 < len(blocks[bi]):
+            heapq.heappush(heap, (blocks[bi][idx+1], bi, idx+1))
+    return res
 
 def counting_sort(arr):
-    max_val = max(arr); min_val = min(arr)
-    range_val = max_val - min_val + 1
-    count = [0] * range_val
-    output = [0] * len(arr)
-    for num in arr:
-        count[num - min_val] += 1
-    for i in range(1, len(count)):
-        count[i] += count[i - 1]
-    for num in reversed(arr):
-        output[count[num - min_val] - 1] = num
-        count[num - min_val] -= 1
-    return output
+    mn, mx = min(arr), max(arr)
+    cnt = [0]* (mx-mn+1)
+    for x in arr:
+        cnt[x-mn] += 1
+    out = []
+    for i, c in enumerate(cnt):
+        out.extend([i+mn]*c)
+    return out
 
 def radix_sort(arr):
-    max_val = max(arr); exp = 1
-    while max_val // exp > 0:
-        counting_sort_by_digit(arr, exp)
+    if not arr: return arr
+    mn, mx = min(arr), max(arr)
+    shift = -mn if mn<0 else 0
+    a = [x+shift for x in arr]
+    exp = 1
+    while exp <= max(a):
+        cnt = [0]*10
+        for x in a:
+            cnt[(x//exp)%10] += 1
+        for i in range(1,10):
+            cnt[i] += cnt[i-1]
+        out = [0]*len(a)
+        for x in reversed(a):
+            d = (x//exp)%10
+            cnt[d] -= 1
+            out[cnt[d]] = x
+        a = out
         exp *= 10
-    return arr
-
-def counting_sort_by_digit(arr, exp):
-    n = len(arr)
-    output = [0] * n
-    count = [0] * 10
-    for i in range(n):
-        count[(arr[i] // exp) % 10] += 1
-    for i in range(1, 10):
-        count[i] += count[i - 1]
-    for i in range(n-1, -1, -1):
-        idx = (arr[i] // exp) % 10
-        output[count[idx] - 1] = arr[i]
-        count[idx] -= 1
-    for i in range(n):
-        arr[i] = output[i]
+    return [x-shift for x in a]
 
 def flash_sort(arr):
     n = len(arr)
-    if n <= 1: return arr
-    mn, mx = min(arr), max(arr)
-    if mn == mx: return arr
-    m = max(2, int(0.45 * n))
-    class_count = [0] * m
-    scale = (m-1) / (mx - mn)
-    for v in arr:
-        class_count[int((v - mn) * scale)] += 1
-    for i in range(1, m):
-        class_count[i] += class_count[i-1]
-    arr_copy = arr.copy()
-    for v in arr_copy:
-        k = int((v - mn) * scale)
-        class_count[k] -= 1
-        arr[class_count[k]] = v
-    for i in range(1, n):
-        j = i
-        while j > 0 and arr[j-1] > arr[j]:
-            arr[j-1], arr[j] = arr[j], arr[j-1]
+    if n==0: return arr
+    mn = mx = arr[0]
+    for x in arr:
+        if x<mn: mn=x
+        if x>mx: mx=x
+    if mn==mx: return arr[:]
+    m = int(0.45*n) or 1
+    l = [0]*m
+    c = (m-1)/(mx-mn)
+    for x in arr:
+        l[int((x-mn)*c)] += 1
+    for i in range(1,m):
+        l[i] += l[i-1]
+    a = arr[:]
+    res = [None]*n
+    for x in reversed(a):
+        k = int((x-mn)*c)
+        l[k] -= 1
+        res[l[k]] = x
+    for i in range(1,n):
+        key = res[i]
+        j = i-1
+        while j>=0 and res[j]>key:
+            res[j+1] = res[j]
             j -= 1
-    return arr
+        res[j+1] = key
+    return res
 
-def generate_array(size):
-    return [random.randint(10, 1000) for _ in range(size)]
+def measure(fn, arr, repeats=10):
+    total = 0.0
+    for _ in range(repeats):
+        tmp = arr[:] 
+        st = time.perf_counter()
+        fn(tmp)
+        total += time.perf_counter() - st
+    return (total/repeats)*1000
 
-# Основні розміри
 sizes = [500, 1000, 2000, 5000, 10000, 25000, 50000]
+results = {'Block':[], 'Counting':[], 'Radix':[], 'Flash':[]}
 
-# Зберігаємо часи в мс
-times = {name: [] for name in ('block_sort','counting_sort','radix_sort','flash_sort')}
+for n in sizes:
+    arr = [random.randint(0,100000) for _ in range(n)]
+    results['Block'].append(  measure(block_sort, arr) )
+    results['Counting'].append(measure(counting_sort, arr))
+    results['Radix'].append(   measure(radix_sort, arr))
+    results['Flash'].append(   measure(flash_sort, arr))
 
-for size in sizes:
-    arr = generate_array(size)
-    start = time.time()
-    block_sort(arr.copy())
-    times['block_sort'].append((time.time() - start)*1000)
-    start = time.time()
-    counting_sort(arr.copy())
-    times['counting_sort'].append((time.time() - start)*1000)
-    start = time.time()
-    radix_sort(arr.copy())
-    times['radix_sort'].append((time.time() - start)*1000)
-    start = time.time()
-    flash_sort(arr.copy())
-    times['flash_sort'].append((time.time() - start)*1000)
+print(f"{'       N':>8} | {'Block(ms)':>9} | {'Counting(ms)':>12} | {'Radix(ms)':>9} | {'Flash(ms)':>9}")
+print('-'*60)
+for i, n in enumerate(sizes):
+    b = results['Block'][i]
+    c = results['Counting'][i]
+    r = results['Radix'][i]
+    f = results['Flash'][i]
+    print(f"{n:8d} | {b:9.2f} | {c:12.2f} | {r:9.2f} | {f:9.2f}")
 
-print(f"{'Розмір':>8}\t{'Блочне':>8}\t{'Підрахунком':>12}\t{'Порозрядне':>12}\t{'Флеш':>6}")
-for sz, b, c, r, f in zip(sizes,
-                          times['block_sort'],
-                          times['counting_sort'],
-                          times['radix_sort'],
-                          times['flash_sort']):
-    print(f"{sz:8d}\t{b:8.2f}\t{c:12.2f}\t{r:12.2f}\t{f:6.2f}")
+sizes_plot = [0] + sizes
+for key in results:
+    results[key] = [0.0] + results[key]
+
+plt.figure(figsize=(8,5))
+for name, col in zip(results, ['tab:blue','tab:orange','tab:green','tab:red']):
+    plt.plot(sizes_plot, results[name], marker='o', label=name, color=col)
+
+plt.xlabel('Кількість елементів')
+plt.ylabel('Час сортування (мс)')
+plt.title('Порівняння алгоритмів сортування')
+plt.xlim(0, sizes[-1])
+plt.ylim(0, None)
+plt.xticks(sizes)
+plt.grid(True, ls='--', alpha=0.5)
+plt.legend()
+plt.tight_layout()
+plt.show()
