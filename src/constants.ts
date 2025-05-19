@@ -82,6 +82,7 @@ export interface MainFormState {
     arrayToSort: number[];
     steps: number[][];
     complexity: string;
+    sortSessionId: string;
 }
 
 export const generateArray = (
@@ -102,69 +103,163 @@ export const generateArray = (
     return array;
 };
 
-export const blockSort = (array: number[], direction: SortDirection) => {
-    const blockSize = Math.max(1, Math.floor(Math.sqrt(array.length)));
+export function* blockSort(
+    array: number[],
+    direction: SortDirection,
+): Generator<number[], number[], unknown> {
+    const n = array.length;
+    if (n === 0) {
+        yield [];
+        return [];
+    }
+    yield [...array];
+
+    const blockSize = Math.max(1, Math.floor(Math.sqrt(n)));
     let blocks: number[][] = [];
 
-    for (let i = 0; i < array.length; i += blockSize) {
-        let block = array.slice(i, i + blockSize).sort((a, b) => a - b);
+    for (let i = 0; i < n; i += blockSize) {
+        let block = array.slice(i, i + blockSize);
+        for (let j = 1; j < block.length; j++) {
+            let key = block[j];
+            let k = j - 1;
+            while (k >= 0 && block[k] > key) {
+                block[k + 1] = block[k];
+                k = k - 1;
+            }
+            block[k + 1] = key;
+        }
         blocks.push(block);
     }
 
-    let minHeap: { value: number; blockIdx: number; elemIdx: number }[] = [];
+    let combinedBlocksArray: number[][] = ([] as number[][]).concat(...blocks);
+    const remainingElements = array.slice(combinedBlocksArray.length);
+
+    let tempStateArray = [...array];
+    let currentIdx = 0;
+    for (const block of blocks) {
+        for (const val of block) {
+            if (currentIdx < tempStateArray.length) {
+                tempStateArray[currentIdx++] = val;
+            }
+        }
+    }
+    let reconstructionIndex = 0;
+    const reconstructedArray = [...array];
+    for (const block of blocks) {
+        for (const element of block) {
+            if (reconstructionIndex < n) {
+                reconstructedArray[reconstructionIndex++] = element;
+            }
+        }
+    }
+    yield [...reconstructedArray];
+
     let sortedArray: number[] = [];
+    currentIdx = 0;
 
-    for (let i = 0; i < blocks.length; i++) {
-        if (blocks[i].length > 0) {
-            minHeap.push({ value: blocks[i][0], blockIdx: i, elemIdx: 0 });
+    const result = [];
+    const blockPointers = new Array(blocks.length).fill(0);
+
+    for (let i = 0; i < n; i++) {
+        let minVal = Infinity;
+        let minBlockIndex = -1;
+
+        for (let j = 0; j < blocks.length; j++) {
+            if (blockPointers[j] < blocks[j].length) {
+                if (blocks[j][blockPointers[j]] < minVal) {
+                    minVal = blocks[j][blockPointers[j]];
+                    minBlockIndex = j;
+                }
+            }
+        }
+
+        if (minBlockIndex !== -1) {
+            result.push(minVal);
+            blockPointers[minBlockIndex]++;
+
+            const visualStepArray = new Array(n);
+            let currentFillIndex = 0;
+
+            for (const sortedVal of result) {
+                if (currentFillIndex < n) {
+                    visualStepArray[currentFillIndex++] = sortedVal;
+                }
+            }
+
+            for (let bIdx = 0; bIdx < blocks.length; bIdx++) {
+                for (
+                    let eIdx = blockPointers[bIdx];
+                    eIdx < blocks[bIdx].length;
+                    eIdx++
+                ) {
+                    if (currentFillIndex < n) {
+                        visualStepArray[currentFillIndex++] =
+                            blocks[bIdx][eIdx];
+                    }
+                }
+            }
+            for (let k = currentFillIndex; k < n; k++) {
+                visualStepArray[k] = 0;
+            }
+
+            yield [...visualStepArray];
+        } else {
+            break;
         }
     }
+    sortedArray = result;
 
-    minHeap.sort((a, b) => a.value - b.value);
-
-    while (minHeap.length > 0) {
-        let { value, blockIdx, elemIdx } = minHeap.shift()!;
-        sortedArray.push(value);
-
-        if (elemIdx + 1 < blocks[blockIdx].length) {
-            minHeap.push({
-                value: blocks[blockIdx][elemIdx + 1],
-                blockIdx,
-                elemIdx: elemIdx + 1,
-            });
-            minHeap.sort((a, b) => a.value - b.value);
-        }
+    if (direction === "desc") {
+        sortedArray.reverse();
+        yield [...sortedArray];
     }
 
-    return direction === "desc" ? sortedArray.reverse() : sortedArray;
-};
+    return sortedArray;
+}
 
-export const countingSort = (array: number[], direction: SortDirection) => {
+export function* countingSort(
+    array: number[],
+    direction: SortDirection,
+): Generator<number[], number[], unknown> {
     const N = array.length;
+    if (N === 0) {
+        yield [];
+        return [];
+    }
+    yield [...array];
 
     let M = 0;
     for (let i = 0; i < N; i++) {
         M = Math.max(M, array[i]);
     }
 
-    const countArray = new Array(M + 1).fill(0);
-
+    const cumulativeCounts = new Array(M + 1).fill(0);
     for (let i = 0; i < N; i++) {
-        countArray[array[i]]++;
+        cumulativeCounts[array[i]]++;
     }
 
     for (let i = 1; i <= M; i++) {
-        countArray[i] += countArray[i - 1];
+        cumulativeCounts[i] += cumulativeCounts[i - 1];
     }
 
-    const outputArray = new Array(N);
+    const outputArray = new Array(N).fill(0);
+
     for (let i = N - 1; i >= 0; i--) {
-        outputArray[countArray[array[i]] - 1] = array[i];
-        countArray[array[i]]--;
+        const currentElement = array[i];
+        const positionInOutput = cumulativeCounts[currentElement] - 1;
+        outputArray[positionInOutput] = currentElement;
+        cumulativeCounts[currentElement]--;
+        yield [...outputArray];
     }
 
-    return direction === "desc" ? outputArray.reverse() : outputArray;
-};
+    if (direction === "desc") {
+        const reversedOutputArray = [...outputArray].reverse();
+        yield [...reversedOutputArray];
+        return reversedOutputArray;
+    }
+
+    return outputArray;
+}
 
 const countSortHelper = (arr: number[], exp: number) => {
     const length = arr.length;
@@ -189,24 +284,49 @@ const countSortHelper = (arr: number[], exp: number) => {
     return output;
 };
 
-export const radixSort = (arr: number[], direction: SortDirection) => {
+export function* radixSort(
+    arr: number[],
+    direction: SortDirection,
+): Generator<number[], number[], unknown> {
+    const n = arr.length;
+    if (n === 0) {
+        yield [];
+        return [];
+    }
+    yield [...arr];
+
     const maxNumber = Math.max(...arr);
     let sortedArr = [...arr];
 
     for (let exp = 1; Math.floor(maxNumber / exp) > 0; exp *= 10) {
-        const sortedIteration = countSortHelper(sortedArr, exp);
-        sortedArr = sortedIteration;
+        sortedArr = countSortHelper(sortedArr, exp);
+        yield [...sortedArr];
     }
 
-    return direction === "desc" ? sortedArr.reverse() : sortedArr;
-};
+    if (direction === "desc") {
+        sortedArr.reverse();
+        yield [...sortedArr];
+    }
 
-export const flashSort = (arr: number[], direction: SortDirection) => {
+    return sortedArr;
+}
+
+export function* flashSort(
+    arrParam: number[],
+    direction: SortDirection,
+): Generator<number[], number[], unknown> {
+    let arr = [...arrParam];
+    const n = arr.length;
+    if (n === 0) {
+        yield [];
+        return [];
+    }
+    yield [...arr];
+
     let max = 0;
     let min = arr[0];
-    const n = arr.length;
     const m = ~~(0.45 * n);
-    const l = new Array(m);
+    const l = new Array(m).fill(0);
 
     for (let i = 1; i < n; ++i) {
         if (arr[i] < min) {
@@ -218,14 +338,12 @@ export const flashSort = (arr: number[], direction: SortDirection) => {
     }
 
     if (min === arr[max]) {
+        yield [...arr];
         return arr;
     }
 
     const c1 = (m - 1) / (arr[max] - min);
 
-    for (let k = 0; k < m; k++) {
-        l[k] = 0;
-    }
     for (let j = 0; j < n; ++j) {
         const k = ~~(c1 * (arr[j] - min));
         ++l[k];
@@ -238,10 +356,10 @@ export const flashSort = (arr: number[], direction: SortDirection) => {
     let hold = arr[max];
     arr[max] = arr[0];
     arr[0] = hold;
+    yield [...arr];
 
-    let move = 0,
-        t: number,
-        flash: number;
+    let move = 0;
+    let t: number, flash: number;
     let j = 0;
     let k = m - 1;
 
@@ -259,6 +377,7 @@ export const flashSort = (arr: number[], direction: SortDirection) => {
             arr[t] = flash;
             flash = hold;
             ++move;
+            yield [...arr];
         }
     }
 
@@ -268,9 +387,16 @@ export const flashSort = (arr: number[], direction: SortDirection) => {
         while (i >= 0 && arr[i] > hold) {
             arr[i + 1] = arr[i];
             i--;
+            yield [...arr];
         }
         arr[i + 1] = hold;
+        yield [...arr];
     }
 
-    return direction === "desc" ? arr.reverse() : arr;
-};
+    if (direction === "desc") {
+        arr.reverse();
+        yield [...arr];
+    }
+
+    return arr;
+}

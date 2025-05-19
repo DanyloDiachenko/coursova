@@ -36,6 +36,7 @@ const initialState: MainFormState = {
     arrayToSort: [],
     steps: [],
     complexity: "",
+    sortSessionId: Date.now().toString(),
 };
 
 const App = () => {
@@ -148,47 +149,52 @@ const App = () => {
         }
 
         const sortingTimeStart = performance.now();
-        /* let steps: number[][] = [arrayToSort]; // Початковий стан */
+        let steps: number[][] = [];
         let sortedArray: number[] = [];
+        const newSortSessionId = Date.now().toString();
 
-        /* const collectSteps = (
-            generator: Generator<number[], number[], undefined>,
+        const collectSteps = (
+            generator: Generator<number[], number[], unknown>,
         ) => {
             let result = generator.next();
             while (!result.done) {
-                steps.push([...result.value]); // Збираємо кожен проміжний стан
-                result = generator.next();
+                steps.push([...result.value]);
+                result = generator.next(result.value);
             }
-            sortedArray = result.value;
-        }; */
+            sortedArray = result.value as number[];
+        };
 
         switch (sortType) {
             case "block": {
-                sortedArray = blockSort(
-                    arrayToSort,
+                const generator = blockSort(
+                    [...arrayToSort],
                     sortDirection as SortDirection,
                 );
+                collectSteps(generator);
                 break;
             }
             case "counting": {
-                sortedArray = countingSort(
-                    arrayToSort,
+                const generator = countingSort(
+                    [...arrayToSort],
                     sortDirection as SortDirection,
                 );
+                collectSteps(generator);
                 break;
             }
             case "radix": {
-                sortedArray = radixSort(
-                    arrayToSort,
+                const generator = radixSort(
+                    [...arrayToSort],
                     sortDirection as SortDirection,
                 );
+                collectSteps(generator);
                 break;
             }
             case "flash": {
-                sortedArray = flashSort(
-                    arrayToSort,
+                const generator = flashSort(
+                    [...arrayToSort],
                     sortDirection as SortDirection,
                 );
+                collectSteps(generator);
                 break;
             }
             default:
@@ -204,8 +210,9 @@ const App = () => {
             arrayToSort,
             isSorting: false,
             sortingTime,
-            complexity: SORTING_ALGORITHMS_WITH_COMPLEXITY[sortType],
-            /*  steps, */
+            complexity: SORTING_ALGORITHMS_WITH_COMPLEXITY[sortType!],
+            steps,
+            sortSessionId: newSortSessionId,
         }));
     };
 
@@ -217,6 +224,7 @@ const App = () => {
                     setState((prev) => ({ ...prev, steps: [] }))
                 }
                 steps={state.steps}
+                key={`${state.arrayToSort.join(",")}-${state.sortSessionId}`}
             />
             <div>
                 <HelloMessage />

@@ -39,12 +39,9 @@ export const SortProcess = ({
     const minValue = allValues.length > 0 ? Math.min(...allValues) : 0;
     const maxValue = allValues.length > 0 ? Math.max(...allValues) : 0;
 
-    const initialStep = visibleSteps[0] || [];
-    const barKeys = initialStep.map((num, index) => `${num}-${index}`);
-
     return isOpened ? (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-            <div className="bg-white rounded-2xl p-6 shadow-xl max-w-[800px] w-full relative">
+            <div className="bg-white rounded-2xl p-6 shadow-xl max-w-[900px] w-full relative">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">
                         Анімація сортування
@@ -60,11 +57,7 @@ export const SortProcess = ({
                     <div className="flex gap-1 items-end">
                         <AnimatePresence>
                             {visibleSteps[currentStep]?.map((num, index) => {
-                                const initialIndex = initialStep.indexOf(num);
-                                const key =
-                                    initialIndex !== -1
-                                        ? barKeys[initialIndex]
-                                        : `${num}-${index}`;
+                                const key = `${num}-${index}`;
                                 return (
                                     <motion.div
                                         key={key}
