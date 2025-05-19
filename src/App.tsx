@@ -22,6 +22,51 @@ import { toast } from "react-toastify";
 import { Spinner } from "./components/Spinner";
 import { SortProcess } from "./components/SortProcess";
 
+const validateRange = (from: string, to: string) => {
+    const parsedFrom = parseFloat(from);
+    const parsedTo = parseFloat(to);
+
+    if (!from.trim().length || isNaN(parsedFrom)) {
+        toast.error("Невірне значення діапазону 'від'");
+        return false;
+    }
+    if (!to.trim().length || isNaN(parsedTo)) {
+        toast.error("Невірне значення діапазону 'до'");
+        return false;
+    }
+    if (parsedFrom < MIN_NUMBER || parsedFrom > MAX_NUMBER) {
+        toast.error(
+            `Діапазон 'від' має бути між ${MIN_NUMBER} і ${MAX_NUMBER}`,
+        );
+        return false;
+    }
+    if (parsedTo < MIN_NUMBER || parsedTo > MAX_NUMBER) {
+        toast.error(`Діапазон 'до' має бути між ${MIN_NUMBER} і ${MAX_NUMBER}`);
+        return false;
+    }
+    if (parsedFrom >= parsedTo) {
+        toast.error("Діапазон 'від' має бути меншим за 'до'");
+        return false;
+    }
+    return true;
+};
+
+const validateArraySize = (size: string) => {
+    const parsedSize = parseInt(size);
+    if (
+        !size.trim().length ||
+        isNaN(parsedSize) ||
+        parsedSize < MIN_ARRAY_LENGTH ||
+        parsedSize > MAX_ARRAY_LENGTH
+    ) {
+        toast.error(
+            `Розмір масиву має бути між ${MIN_ARRAY_LENGTH} і ${MAX_ARRAY_LENGTH}`,
+        );
+        return false;
+    }
+    return true;
+};
+
 const initialState: MainFormState = {
     generateType: null,
     diapason: { from: "", to: "" },
@@ -39,80 +84,33 @@ const initialState: MainFormState = {
     sortSessionId: Date.now().toString(),
 };
 
+const validateForm = (state: MainFormState): boolean => {
+    if (!state.sortType || !state.sortDirection) {
+        toast.error("Не вказано тип або напрямок сортування");
+        return false;
+    }
+    if (state.generateType === "auto") {
+        return (
+            validateRange(state.diapason.from, state.diapason.to) &&
+            validateArraySize(state.arraySize)
+        );
+    }
+    if (
+        state.generateType === "manual" &&
+        state.manualNumbers.length < MIN_ARRAY_LENGTH
+    ) {
+        toast.error(`Необхідно ввести мінімум ${MIN_ARRAY_LENGTH} чисел`);
+        return false;
+    }
+    return true;
+};
+
 const App = () => {
     const [state, setState] = useState<MainFormState>(initialState);
 
-    const validateRange = (from: string, to: string) => {
-        const parsedFrom = parseFloat(from);
-        const parsedTo = parseFloat(to);
-
-        if (!from.trim().length || isNaN(parsedFrom)) {
-            toast.error("Невірне значення діапазону 'від'");
-            return false;
-        }
-        if (!to.trim().length || isNaN(parsedTo)) {
-            toast.error("Невірне значення діапазону 'до'");
-            return false;
-        }
-        if (parsedFrom < MIN_NUMBER || parsedFrom > MAX_NUMBER) {
-            toast.error(
-                `Діапазон 'від' має бути між ${MIN_NUMBER} і ${MAX_NUMBER}`,
-            );
-            return false;
-        }
-        if (parsedTo < MIN_NUMBER || parsedTo > MAX_NUMBER) {
-            toast.error(
-                `Діапазон 'до' має бути між ${MIN_NUMBER} і ${MAX_NUMBER}`,
-            );
-            return false;
-        }
-        if (parsedFrom >= parsedTo) {
-            toast.error("Діапазон 'від' має бути меншим за 'до'");
-            return false;
-        }
-        return true;
-    };
-
-    const validateArraySize = (size: string) => {
-        const parsedSize = parseInt(size);
-        if (
-            !size.trim().length ||
-            isNaN(parsedSize) ||
-            parsedSize < MIN_ARRAY_LENGTH ||
-            parsedSize > MAX_ARRAY_LENGTH
-        ) {
-            toast.error(
-                `Розмір масиву має бути між ${MIN_ARRAY_LENGTH} і ${MAX_ARRAY_LENGTH}`,
-            );
-            return false;
-        }
-        return true;
-    };
-
-    const validateForm = (): boolean => {
-        if (!state.sortType || !state.sortDirection) {
-            toast.error("Не вказано тип або напрямок сортування");
-            return false;
-        }
-        if (state.generateType === "auto") {
-            return (
-                validateRange(state.diapason.from, state.diapason.to) &&
-                validateArraySize(state.arraySize)
-            );
-        }
-        if (
-            state.generateType === "manual" &&
-            state.manualNumbers.length < MIN_ARRAY_LENGTH
-        ) {
-            toast.error(`Необхідно ввести мінімум ${MIN_ARRAY_LENGTH} чисел`);
-            return false;
-        }
-        return true;
-    };
-
     const onGenerate = (e: FormEvent) => {
         e.preventDefault();
-        if (!validateForm()) return;
+        if (!validateForm(state)) return;
 
         const {
             generateType,
