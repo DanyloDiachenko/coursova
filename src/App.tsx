@@ -6,11 +6,8 @@ import { MainForm } from "./components/MainForm";
 import { SortResult } from "./components/SortResult";
 import {
     blockSort,
-    blockSortGenerator,
     countingSort,
-    countingSortGenerator,
     flashSort,
-    flashSortGenerator,
     generateArray,
     MainFormState,
     MAX_ARRAY_LENGTH,
@@ -18,7 +15,6 @@ import {
     MIN_ARRAY_LENGTH,
     MIN_NUMBER,
     radixSort,
-    radixSortGenerator,
     SortDirection,
 } from "./constants";
 import { toast } from "react-toastify";
