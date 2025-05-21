@@ -1,0 +1,160 @@
+@startuml
+!theme vibrant
+
+interface ISortingAlgorithm {
+    + readonly name: string
+    + readonly complexity: string
+    + sort(data: number[], direction: SortDirectionType): Generator<number[], number[], unknown>
+    + validateData(data: number[]): { isValid: boolean; errorMessage?: string }
+}
+
+abstract class AbstractSortingAlgorithm implements ISortingAlgorithm {
+    + {abstract} name: string
+    + {abstract} complexity: string
+    + {abstract} sort(data: number[], direction: SortDirectionType): Generator<number[], number[], unknown>
+    + validateData(data: number[]): { isValid: boolean; errorMessage?: string }
+    # handleEmptyArray(): Generator<number[], number[], unknown>
+    # handleSortDirection(sortedArray: number[], direction: SortDirectionType): Generator<number[], number[], unknown>
+    # cloneArray(data: number[]): number[]
+}
+
+class BlockSortAlgorithm extends AbstractSortingAlgorithm
+class CountingSortAlgorithm extends AbstractSortingAlgorithm
+class RadixSortAlgorithm extends AbstractSortingAlgorithm
+class FlashSortAlgorithm extends AbstractSortingAlgorithm
+
+class SortDirectionDefinition {
+    + readonly id: SortDirectionType
+    + readonly displayName: string
+    + ASC: SortDirectionDefinition
+    + DESC: SortDirectionDefinition
+    + getById(id: SortDirectionType | null): SortDirectionDefinition | null
+    + all: SortDirectionDefinition[]
+}
+
+class SortTypeDefinition {
+    + readonly id: SortTypeEnum
+    + readonly displayName: string
+    - readonly AlgorithmClass: new () => ISortingAlgorithm
+    + algorithm: ISortingAlgorithm
+    + complexity: string
+    + validateData(data: number[]): { isValid: boolean; errorMessage?: string }
+}
+SortTypeDefinition ..> ISortingAlgorithm : uses >
+
+class SortTypes {
+    + BLOCK: SortTypeDefinition
+    + COUNTING: SortTypeDefinition
+    + RADIX: SortTypeDefinition
+    + FLASH: SortTypeDefinition
+    - _all: SortTypeDefinition[]
+    + all(): ReadonlyArray<SortTypeDefinition>
+    + getById(id: SortTypeEnum | null): SortTypeDefinition | null
+}
+SortTypes ..> SortTypeDefinition : uses >
+
+class AppService {
+    - _state: MainFormState
+    - _setStateReact: Dispatch<SetStateAction<MainFormState>>
+    + constructor(initialState: MainFormState, setStateReact: Dispatch<SetStateAction<MainFormState>>)
+    + currentState: Readonly<MainFormState>
+    + updateMainFormState(updater: (prev: MainFormState) => MainFormState): void
+    - _validateRange(from: string, to: string): boolean
+    - _validateArraySize(size: string): boolean
+    - _validateFormForSorting(): boolean
+    + handleSortRequest(): void
+}
+
+class MainFormService {
+    - _state: MainFormState
+    - setState: (updater: (prev: MainFormState) => MainFormState) => void
+    + constructor(state: MainFormState, setState: (updater: (prev: MainFormState) => MainFormState) => void)
+    + state: Readonly<MainFormState>
+    + generateType: GenerateType | null
+    + diapason: { from: string; to: string }
+    + arraySize: string
+    + sortType: SortTypeDefinition | null
+    + sortDirection: SortDirectionDefinition | null
+    + manualNumbers: ReadonlyArray<{ value: number; id: number }>
+    + manualNumberInput: string
+    - validateManualNumberInputLength(): boolean
+    - validateManualNumberInput(): boolean
+    - parseManualNumberInput(): number
+    - validateManualNumberInputNumber(): boolean
+    + addManualNumber(): void
+    + removeManualNumber(numberId: number): void
+    + setGenerateType(value: GenerateType | null): void
+    + setDiapason(value: { from: string; to: string }): void
+    + setArraySize(value: string): void
+    + setManualNumberInput(value: string): void
+    + setSortDirection(value: SortDirectionType | null): void
+    + setSortType(value: SortTypeEnum | null): void
+}
+MainFormService ..> SortTypes : uses >
+MainFormService ..> SortDirectionDefinition : uses >
+
+class SortResultService {
+    - _originalArrayToSort: number[]
+    - _originalSortedArray: number[]
+    + readonly sortingTime: number
+    + readonly complexity: string
+    - _currentVisibleLengthOption: VisibleLengthOption
+    - _setCurrentVisibleLengthOptionState: Dispatch<SetStateAction<VisibleLengthOption>>
+    + constructor(
+        props: SortResultProps,
+        currentVisibleLengthOption: VisibleLengthOption,
+        setCurrentVisibleLengthOptionState: Dispatch<SetStateAction<VisibleLengthOption>>
+      )
+    + currentVisibleLengthOption: VisibleLengthOption
+    + setVisibleLengthOption(option: VisibleLengthOption): void
+    + visibleArrayToSort: number[]
+    + visibleSortedArray: number[]
+    + saveResultsToFile(): void
+}
+
+class App <<Component>> {
+    - appService: AppService
+    - state: MainFormState
+    + onMainFormSubmit(event: FormEvent<HTMLFormElement>): void
+    + showSortingResults(): void
+}
+App *-- AppService : uses >
+App --> MainForm : show >
+App --> SortResult : show results >
+
+class MainForm <<Component>> {
+    - mainFormService: MainFormService
+    + state: MainFormState
+    + setState: Dispatch<SetStateAction<MainFormState>>
+    + onGenerate(): void
+}
+MainForm *-- MainFormService : uses >
+
+class GenerateTypeComponent <<Component>>
+class DiapasonComponent <<Component>>
+class InputArraySizeComponent <<Component>>
+class AddNumberComponent <<Component>>
+class AddedNumbersComponent <<Component>>
+class SortDirectionComponent <<Component>>
+class SortTypeComponent <<Component>>
+
+MainForm --> GenerateTypeComponent : show >
+MainForm --> DiapasonComponent : show >
+MainForm --> InputArraySizeComponent : show >
+MainForm --> AddNumberComponent : show >
+MainForm --> AddedNumbersComponent : show >
+MainForm --> SortDirectionComponent : show >
+MainForm --> SortTypeComponent : show >
+
+class SortResult <<Component>> {
+    - sortResultService: SortResultService
+    + arrayToSort: number[]
+    + sortedArray: number[]
+    + sortingTime: number
+    + complexity: string
+}
+SortResult *-- SortResultService : uses >
+
+App ..> SortResultService : uses for results >
+
+@enduml

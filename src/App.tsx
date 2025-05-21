@@ -3,70 +3,12 @@ import { HelloMessage } from "./components/HelloMessage";
 import { Divider } from "./components/Divider";
 import { MainForm } from "./components/MainForm";
 import { SortResult } from "./components/SortResult";
-import {
-    blockSort,
-    countingSort,
-    flashSort,
-    generateArray,
-    MainFormState,
-    MAX_ARRAY_LENGTH,
-    MAX_NUMBER,
-    MIN_ARRAY_LENGTH,
-    MIN_NUMBER,
-    radixSort,
-    SortDirection,
-    SORTING_ALGORITHMS_WITH_COMPLEXITY,
-} from "./constants";
-import { toast } from "react-toastify";
 import { Spinner } from "./components/Spinner";
 import { SortProcess } from "./components/SortProcess";
+import { MainFormState } from "./constants/mainFormState.interface";
+import { AppService } from "./AppService";
 
-const validateRange = (from: string, to: string) => {
-    const parsedFrom = parseFloat(from);
-    const parsedTo = parseFloat(to);
-
-    if (!from.trim().length || isNaN(parsedFrom)) {
-        toast.error("Невірне значення діапазону 'від'");
-        return false;
-    }
-    if (!to.trim().length || isNaN(parsedTo)) {
-        toast.error("Невірне значення діапазону 'до'");
-        return false;
-    }
-    if (parsedFrom < MIN_NUMBER || parsedFrom > MAX_NUMBER) {
-        toast.error(
-            `Діапазон 'від' має бути між ${MIN_NUMBER} і ${MAX_NUMBER}`,
-        );
-        return false;
-    }
-    if (parsedTo < MIN_NUMBER || parsedTo > MAX_NUMBER) {
-        toast.error(`Діапазон 'до' має бути між ${MIN_NUMBER} і ${MAX_NUMBER}`);
-        return false;
-    }
-    if (parsedFrom >= parsedTo) {
-        toast.error("Діапазон 'від' має бути меншим за 'до'");
-        return false;
-    }
-    return true;
-};
-
-const validateArraySize = (size: string) => {
-    const parsedSize = parseInt(size);
-    if (
-        !size.trim().length ||
-        isNaN(parsedSize) ||
-        parsedSize < MIN_ARRAY_LENGTH ||
-        parsedSize > MAX_ARRAY_LENGTH
-    ) {
-        toast.error(
-            `Розмір масиву має бути між ${MIN_ARRAY_LENGTH} і ${MAX_ARRAY_LENGTH}`,
-        );
-        return false;
-    }
-    return true;
-};
-
-const initialState: MainFormState = {
+const initialMainFormState: MainFormState = {
     generateType: null,
     diapason: { from: "", to: "" },
     arraySize: "",
@@ -83,206 +25,53 @@ const initialState: MainFormState = {
     sortSessionId: Date.now().toString(),
 };
 
-const validateForm = (state: MainFormState): boolean => {
-    if (!state.sortType || !state.sortDirection) {
-        toast.error("Не вказано тип або напрямок сортування");
-        return false;
-    }
-    if (state.generateType === "auto") {
-        return (
-            validateRange(state.diapason.from, state.diapason.to) &&
-            validateArraySize(state.arraySize)
-        );
-    } else if (state.generateType === "manual") {
-        if (state.manualNumbers.length < MIN_ARRAY_LENGTH) {
-            toast.error(`Необхідно ввести мінімум ${MIN_ARRAY_LENGTH} чисел`);
-            return false;
-        }
-        return true;
-    } else {
-        toast.error("Не обрано спосіб генерації масиву");
-        return false;
-    }
-};
-
 const App = () => {
-    const [state, setState] = useState<MainFormState>(initialState);
+    const [mainFormState, setMainFormState] =
+        useState<MainFormState>(initialMainFormState);
 
-    const onGenerate = (e: FormEvent) => {
+    const appService = new AppService(mainFormState, setMainFormState);
+
+    const onMainFormSubmit = (e: FormEvent) => {
         e.preventDefault();
-        const {
-            generateType,
-            sortDirection,
-            sortType,
-            diapason,
-            arraySize,
-            manualNumbers,
-        } = state;
-
-        const currentFormStateForValidation: MainFormState = {
-            ...initialState,
-            generateType,
-            sortDirection,
-            sortType,
-            diapason,
-            arraySize,
-            manualNumbers,
-        };
-
-        if (!validateForm(currentFormStateForValidation)) return;
-
-        setState((prev) => ({
-            ...prev,
-            isSorting: true,
-            sortedArray: [],
-            steps: [],
-            sortingTime: 0,
-            complexity: "",
-        }));
-
-        let arrayToSortLocal: number[] = [];
-        if (generateType === "auto") {
-            arrayToSortLocal = generateArray(parseInt(arraySize), {
-                from: parseFloat(diapason.from),
-                to: parseFloat(diapason.to),
-            });
-        } else if (generateType === "manual") {
-            arrayToSortLocal = manualNumbers.map((item) => item.value);
-        } else {
-            toast.error("Невірний тип генерації масиву");
-            setState((prev) => ({ ...prev, isSorting: false }));
-            return;
-        }
-
-        if (sortType === "counting" || sortType === "radix") {
-            if (Math.min(...arrayToSortLocal) < 0) {
-                toast.error(
-                    "Сортування підрахунком та порозрядне сортування не підтримує від'ємні числа",
-                );
-                setState((prev) => ({ ...prev, isSorting: false }));
-                return;
-            }
-            if (!arrayToSortLocal.every(Number.isInteger)) {
-                toast.error(
-                    "Сортування підрахунком та порозрядне сортування підтримує тільки цілі числа",
-                );
-                setState((prev) => ({ ...prev, isSorting: false }));
-                return;
-            }
-        }
-
-        setTimeout(() => {
-            const sortingTimeStart = performance.now();
-            const newSortSessionId = Date.now().toString();
-            const shouldShowAnimation = arrayToSortLocal.length <= 20;
-            if (!shouldShowAnimation) {
-                toast.warning(
-                    "Анімація сортування не відображатиметься для масивів більших за 20 елементів",
-                );
-            }
-            let collectedStepsForAnimation: number[][] = [];
-            let finalSortedArray: number[] = [];
-
-            const processSortGenerator = (
-                generator: Generator<number[], number[], unknown>,
-            ) => {
-                let result = generator.next();
-                while (!result.done) {
-                    if (shouldShowAnimation) {
-                        collectedStepsForAnimation.push([...result.value]);
-                    }
-                    result = generator.next(result.value);
-                }
-                finalSortedArray = result.value as number[];
-            };
-
-            switch (sortType) {
-                case "block": {
-                    const generator = blockSort(
-                        [...arrayToSortLocal],
-                        sortDirection as SortDirection,
-                    );
-                    processSortGenerator(generator);
-                    break;
-                }
-                case "counting": {
-                    const generator = countingSort(
-                        [...arrayToSortLocal],
-                        sortDirection as SortDirection,
-                    );
-                    processSortGenerator(generator);
-                    break;
-                }
-                case "radix": {
-                    const generator = radixSort(
-                        [...arrayToSortLocal],
-                        sortDirection as SortDirection,
-                    );
-                    processSortGenerator(generator);
-                    break;
-                }
-                case "flash": {
-                    const generator = flashSort(
-                        [...arrayToSortLocal],
-                        sortDirection as SortDirection,
-                    );
-                    processSortGenerator(generator);
-                    break;
-                }
-                default:
-                    toast.error("Невалідний тип сортування під час виконання");
-                    setState((prev) => ({ ...prev, isSorting: false }));
-                    return;
-            }
-
-            const sortingTime = performance.now() - sortingTimeStart;
-
-            setState((prev) => ({
-                ...prev,
-                arrayToSort: arrayToSortLocal,
-                sortedArray: finalSortedArray,
-                isSorting: false,
-                sortingTime,
-                complexity: SORTING_ALGORITHMS_WITH_COMPLEXITY[sortType!],
-                steps: collectedStepsForAnimation,
-                sortSessionId: newSortSessionId,
-            }));
-        }, 0);
+        appService.handleSortRequest();
     };
 
     return (
-        <>
-            <SortProcess
-                isOpened={state.steps.length > 0}
-                onCloseClick={() =>
-                    setState((prev) => ({ ...prev, steps: [] }))
-                }
-                steps={state.steps}
-                key={`${state.arrayToSort.join(",")}-${state.sortSessionId}`}
+        <div className="bg-gray-50 min-h-screen">
+            <HelloMessage />
+            <Divider />
+            <MainForm
+                state={appService.currentState}
+                setState={appService.updateMainFormState.bind(appService)}
+                onGenerate={onMainFormSubmit}
             />
-            <div>
-                <HelloMessage />
-                <Divider />
-                <MainForm
-                    state={state}
-                    setState={setState}
-                    onGenerate={onGenerate}
-                />
-                <Divider />
-                {state.isSorting ? (
-                    <Spinner />
-                ) : (
-                    state.sortedArray.length > 0 && (
-                        <SortResult
-                            arrayToSort={state.arrayToSort}
-                            sortedArray={state.sortedArray}
-                            sortingTime={state.sortingTime}
-                            complexity={state.complexity}
-                        />
-                    )
+            <Divider />
+            {appService.currentState.isSorting && <Spinner />}
+            {appService.currentState.steps.length > 0 &&
+                appService.currentState.arrayToSort.length > 0 &&
+                appService.currentState.arrayToSort.length <= 20 && (
+                    <SortProcess
+                        isOpened={appService.currentState.steps.length > 0}
+                        onCloseClick={() => {
+                            appService.updateMainFormState((prev) => ({
+                                ...prev,
+                                steps: [],
+                            }));
+                        }}
+                        steps={appService.currentState.steps}
+                        key={appService.currentState.sortSessionId}
+                    />
                 )}
-            </div>
-        </>
+            {appService.currentState.sortedArray.length > 0 &&
+                !appService.currentState.isSorting && (
+                    <SortResult
+                        arrayToSort={appService.currentState.arrayToSort}
+                        sortedArray={appService.currentState.sortedArray}
+                        sortingTime={appService.currentState.sortingTime}
+                        complexity={appService.currentState.complexity}
+                    />
+                )}
+        </div>
     );
 };
 

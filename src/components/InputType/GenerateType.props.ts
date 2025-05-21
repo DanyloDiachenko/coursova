@@ -1,4 +1,4 @@
-import { GenerateType } from "../../constants";
+import { GenerateType } from "../../constants/constants";
 
 export interface GenerateTypeProps {
     generateType: GenerateType | null;

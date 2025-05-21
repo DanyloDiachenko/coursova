@@ -1,5 +1,3 @@
-import { toast } from "react-toastify";
-import { MAX_ARRAY_LENGTH, MAX_NUMBER, MIN_NUMBER } from "../../constants";
 import { GenerateType as GenerateTypeComponent } from "../InputType";
 import { Diapason } from "../Diapason";
 import { InputArraySize } from "../ArraySize";
@@ -9,128 +7,96 @@ import { SortDirection as SortDirectionComponent } from "../SortDirection";
 import { SortType as SortTypeComponent } from "../SortType";
 import { Button } from "../Button";
 import { MainFormProps } from "./MainForm.props";
+import { MainFormService } from "./MainFormService";
+import { SortTypes } from "../../constants/sortingTypes";
+import { SortDirectionDefinition } from "../../constants/sortDirection";
 
 export const MainForm = ({ state, setState, onGenerate }: MainFormProps) => {
-    const onAddManualNumber = () => {
-        if (state.manualNumbers.length >= MAX_ARRAY_LENGTH) {
-            toast.error(
-                `Досягнута максимальна кількість чисел - ${MAX_ARRAY_LENGTH}`,
-            );
-            return;
-        }
-
-        if (!state.manualNumberInput.trim()) {
-            toast.error("Введіть число");
-            return;
-        }
-
-        const parsedNumber = parseFloat(state.manualNumberInput);
-
-        if (
-            isNaN(parsedNumber) ||
-            parsedNumber > MAX_NUMBER ||
-            parsedNumber < MIN_NUMBER
-        ) {
-            toast.error(
-                `Введіть коректне число (від ${MIN_NUMBER} до ${MAX_NUMBER})`,
-            );
-            return;
-        }
-
-        setState((prev) => ({
-            ...prev,
-            manualNumbers: [
-                ...prev.manualNumbers,
-                { value: parsedNumber, id: Date.now() },
-            ],
-            manualNumberInput: "",
-        }));
-    };
-
-    const onRemoveManualNumber = (numberId: number) => {
-        setState((prev) => ({
-            ...prev,
-            manualNumbers: prev.manualNumbers.filter((n) => n.id !== numberId),
-        }));
-    };
+    const mainFormService = new MainFormService(state, setState);
 
     return (
         <div className="m-3 sm:m-6">
             <form
-                onSubmit={onGenerate}
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    if (onGenerate) {
+                        onGenerate(e);
+                    }
+                }}
                 className="bg-white border-2 border-gray-200 rounded-lg p-3 sm:p-5 inline-block"
             >
                 <GenerateTypeComponent
-                    generateType={state.generateType}
-                    setGenerateType={(value) =>
-                        setState((prev) => ({ ...prev, generateType: value }))
-                    }
+                    generateType={mainFormService.generateType}
+                    setGenerateType={mainFormService.setGenerateType.bind(
+                        mainFormService,
+                    )}
                 />
-                {state.generateType && (
+                {mainFormService.generateType && (
                     <>
-                        {state.generateType === "auto" ? (
+                        {mainFormService.generateType === "auto" ? (
                             <>
                                 <Diapason
-                                    diapason={state.diapason}
-                                    setDiapason={(value) =>
-                                        setState((prev) => ({
-                                            ...prev,
-                                            diapason: value,
-                                        }))
-                                    }
+                                    diapason={mainFormService.diapason}
+                                    setDiapason={mainFormService.setDiapason.bind(
+                                        mainFormService,
+                                    )}
                                 />
                                 <InputArraySize
-                                    arraySize={state.arraySize}
-                                    setArraySize={(value) =>
-                                        setState((prev) => ({
-                                            ...prev,
-                                            arraySize: value,
-                                        }))
-                                    }
+                                    arraySize={mainFormService.arraySize}
+                                    setArraySize={mainFormService.setArraySize.bind(
+                                        mainFormService,
+                                    )}
                                 />
                             </>
                         ) : (
                             <div className="mt-4">
                                 <h2>Введіть число</h2>
                                 <AddNumber
-                                    manualNumberInput={state.manualNumberInput}
-                                    setManualNumberInput={(value) =>
-                                        setState((prev) => ({
-                                            ...prev,
-                                            manualNumberInput: value,
-                                        }))
+                                    manualNumberInput={
+                                        mainFormService.manualNumberInput
                                     }
-                                    onAddManualNumber={onAddManualNumber}
+                                    setManualNumberInput={mainFormService.setManualNumberInput.bind(
+                                        mainFormService,
+                                    )}
+                                    onAddManualNumber={mainFormService.addManualNumber.bind(
+                                        mainFormService,
+                                    )}
                                 />
                                 <AddedNumbers
-                                    manualNumbers={state.manualNumbers}
-                                    onRemoveManualNumber={onRemoveManualNumber}
+                                    manualNumbers={[
+                                        ...mainFormService.manualNumbers,
+                                    ]}
+                                    onRemoveManualNumber={mainFormService.removeManualNumber.bind(
+                                        mainFormService,
+                                    )}
                                 />
                             </div>
                         )}
-
                         <SortDirectionComponent
-                            sortDirection={state.sortDirection}
-                            setSortDirection={(value) =>
-                                setState((prev) => ({
-                                    ...prev,
-                                    sortDirection: value,
-                                }))
+                            sortDirection={
+                                mainFormService.sortDirection?.id || null
                             }
+                            setSortDirection={mainFormService.setSortDirection.bind(
+                                mainFormService,
+                            )}
+                            options={SortDirectionDefinition.all.map((sd) => ({
+                                value: sd.id,
+                                label: sd.displayName,
+                            }))}
                         />
                         <SortTypeComponent
-                            sortType={state.sortType}
-                            setSortType={(value) =>
-                                setState((prev) => ({
-                                    ...prev,
-                                    sortType: value,
-                                }))
-                            }
+                            sortType={mainFormService.sortType?.id || null}
+                            setSortType={mainFormService.setSortType.bind(
+                                mainFormService,
+                            )}
+                            options={SortTypes.all().map((st) => ({
+                                value: st.id,
+                                label: st.displayName,
+                            }))}
                         />
                     </>
                 )}
-
-                {state.generateType && (
+                {mainFormService.generateType && (
                     <Button className="mt-6" type="submit">
                         Відсортувати
                     </Button>

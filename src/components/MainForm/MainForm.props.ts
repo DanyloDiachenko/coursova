@@ -1,5 +1,5 @@
 import { Dispatch, FormEvent, SetStateAction } from "react";
-import { MainFormState } from "../../constants";
+import { MainFormState } from "../../constants/constants";
 
 export interface MainFormProps {
     state: MainFormState;

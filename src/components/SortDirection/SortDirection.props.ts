@@ -1,6 +1,12 @@
-import { SortDirection } from "../../constants";
+import { SortDirection } from "../../constants/variables";
+
+export interface SortDirectionOption {
+    value: SortDirection;
+    label: string;
+}
 
 export interface SortDirectionProps {
     sortDirection: SortDirection | null;
-    setSortDirection: (direction: SortDirection | null) => void;
+    setSortDirection: (sortDirection: SortDirection | null) => void;
+    options: SortDirectionOption[];
 }
